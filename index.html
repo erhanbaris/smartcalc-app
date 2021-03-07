@@ -18,22 +18,121 @@
   <link href="/css/deveb-s1n0n40/deveb.css" rel="stylesheet"> 
   <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.11"></script>
+  <style>
+    #result {
+      background-color: cornflowerblue;
+    }
+    .CodeMirror {
+      font-family: 'Titillium Web', sans-serif;
+      font-size: 20px;
+      line-height: 1.5em;
+      display: block;
+    }
+  
+    .CodeMirror * {
+      font-family: 'Titillium Web', sans-serif;
+      font-size: 20px;
+      line-height: 1.5em;
+    }
+  
+    #target >  .CodeMirror * {
+      text-align: right;
+      color: #83a300;
+      padding-right: 5px;
+    }
+  
+    .text-token {
+      color: #8B949E;
+    }
+  
+    .operator-token {
+      color: #cda869;
+    }
+  
+    .number-token {
+      color: #79C0FF;
+    }
+  
+    .comment-token {
+      color: rgb(111, 66, 193);
+    }
+  
+    .money-symbol-token {
+      color: #ff7b72;
+    }
+  
+  .variable-token {
+    color: #690;
+  }
+  
+  .money-token {
+    color: rgb(245, 69, 69);
+  }
+  .variable-use-token {
+      background-color: white;
+      border-radius: 10px;
+      padding: 0px 5px;
+      color: #1f2430;
+  }
+  .variable-defination-token {
+      color: white;
+  }
+    #source { }
+    #target > .CodeMirror * { padding-right: 1px !important; }
+    .CodeMirror-hscrollbar{overflow-x: hidden;}
+    .CodeMirror-vscrollbar{overflow-y: hidden;}
+.CodeMirror-scroll{padding:0 !important; margin:0 !important;}
+.CodeMirror-scroll{margin-top:17px !important; margin-left:17px !important;}
+
+    #editor {
+      border-radius: 10px;
+      border: 2px solid #1f2430;
+      padding: 30px;
+      background-color: #1f2430;
+      box-shadow: 0 8px 12px rgb(0 0 0 / 70%);
+    }
+  
+  .container { }
+    .clearfix:before,
+    .clearfix:after { content: " "; display: table; }
+    .clearfix:after { clear: both; }
+    .clearfix { *zoom: 1; }
+  
+    header {
+      font-family: 'Roboto', sans-serif;
+      font-size: 25px;
+      margin: 30px;
+    }
+  
+    .description {
+      font-family: 'Roboto', sans-serif;
+      font-size: 15px;
+      font-weight: 300;
+      margin: 10px 0;
+    }
+    .thin {
+      font-weight: 100;
+    }
+    .clearfix div{display: block; float:left; }
+    .CodeMirror-vscrollbar{overflow: hidden !important;}
+    .CodeMirror-sizer{min-width: 100% !important;border-right:0px;}
+  </style>
 </head>
 <body>
 <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
-<div class="header">
-  <span class="thin">CALCULATOR FOR</span> <span class="bold">PEOPLES</span>
-</div>
+<header>
+  <h1 data-gnl="o"><span class="thin">CALCULATOR FOR</span><b> PEOPLES</b></h1>
+  <div data-gnl="o" class="description">
+    It is easy to calculate, it is easy to use, it is free to use, it is free to share with your friends. <br>
 
-<div class="description">
- It is easy to calculate, it is easy to use, it is free to use, it is free to share with your friends. <br>
-
-</div>
-<div class="clearfix">
+   </div>
+   <div class="bold" data-gnl="o"  style="color:red; font-size:13px;">USE SCROLL UP/DOWN ON BOARD</div>
+</header>
+<div data-gnl="22 /24 _o" class="clearfix">
   <div class="container">
     <div id="editor">
-      <div id="source" name="source"></div>
-      <div id="target" name="target"></div>
+      <div data-gnl="14 /24" id="source" name="source"></div>
+      <div data-gnl="10 /24" id="target" name="target"></div>
     </div>
   </div>
 </div>
@@ -79,8 +178,8 @@ $1k earninng / 5 people`,
     readOnly: 'nocursor'
   });
 
-  window.editor.setSize(null, 600);
-  window.output.setSize(null, 600);
+  window.editor.setSize(null, 400);
+  window.output.setSize(null, 400);
 
   var typeColors = {
     0: "",
@@ -180,117 +279,5 @@ $1k earninng / 5 people`,
 </script>
 
 </body>
-<style>
-  #result {
-    background-color: cornflowerblue;
-  }
-  .CodeMirror {
-    font-family: 'Titillium Web', sans-serif;
-    font-size: 20px;
-    line-height: 1.5em;
-  }
 
-  .CodeMirror * {
-    font-family: 'Titillium Web', sans-serif;
-    font-size: 20px;
-    line-height: 1.5em;
-  }
-
-  #target >  .CodeMirror * {
-    text-align: right;
-    color: #83a300;
-    padding-right: 5px;
-  }
-
-  .text-token {
-    color: #8B949E;
-  }
-
-  .operator-token {
-    color: #cda869;
-  }
-
-  .number-token {
-    color: #79C0FF;
-  }
-
-  .comment-token {
-    color: rgb(111, 66, 193);
-  }
-
-  .money-symbol-token {
-    color: #ff7b72;
-  }
-
-.variable-token {
-  color: #690;
-}
-
-.money-token {
-  color: rgb(245, 69, 69);
-}
-.variable-use-token {
-    background-color: white;
-    border-radius: 10px;
-    padding: 0px 5px;
-    color: #1f2430;
-}
-.variable-defination-token {
-    color: white;
-}
-
-  #source {
-    width: calc(100% - 150px);
-    float: left;
-  }
-
-  #target {
-    width: 150px;
-    float: left;
-  }
-
-
-  #editor {
-    width: 900px;
-    border-radius: 10px;
-    float: left;
-    border: 2px solid #1f2430;
-    padding: 30px;
-    background-color: #1f2430;
-
-    position: relative; 
-    float: right; 
-    right: -50%;
-    box-shadow: 0 8px 12px rgb(0 0 0 / 70%);
-  }
-
-.container { position: relative; float: right; right: 50%; }
-  .clearfix:before,
-  .clearfix:after { content: " "; display: table; }
-  .clearfix:after { clear: both; }
-  .clearfix { *zoom: 1; }
-
-  .header {
-    font-family: 'Roboto', sans-serif;
-    font-size: 25px;
-    text-align: center;
-    margin: 30px;
-  }
-
-  .header .thin {
-    font-weight: 100;
-  }
-  
-  .header .bold {
-    font-weight: 500;
-  }
-  
-  .description {
-    font-family: 'Roboto', sans-serif;
-    font-size: 15px;
-    font-weight: 300;
-    text-align: center;
-    margin: 10px 0;
-  }
-</style>
 </html>
