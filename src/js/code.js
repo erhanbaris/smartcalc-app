@@ -147,7 +147,7 @@ $1k earninng / 5 people`
         update_currencies: function() {
             var that = this;
             that.currency_updating = true;
-            var currenciyRatesApi = "http://www.floatrates.com/daily/usd.json";
+            var currenciyRatesApi = "//www.floatrates.com/daily/usd.json";
             $.getJSON(currenciyRatesApi, {
                     tagmode: "any",
                     format: "json"
