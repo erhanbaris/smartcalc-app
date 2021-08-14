@@ -1,282 +1,59 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <meta charset="utf-8">
-  <title>Calculator for Peoples</title>
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@200;300;400&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;500&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.2/codemirror.min.js" integrity="sha512-UZAFKlbB343VyEfCComsVIxp836iYUvHyAuRYFoVN4LTNB6mpM+8EgKW8ymIV2qLZQsIiNdbpmJuA8y6IKzOow==" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.2/addon/lint/javascript-lint.min.js" integrity="sha512-zwusqVz1qn+JyCHc09C0naAEMMZKn3K8deUOpDMnC4WCM59kfg8rmF+dJNyNW9AmfIELag6MeALrEBD33rJVpA==" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.2/addon/hint/javascript-hint.min.js" integrity="sha512-2zi+0HSB5MXoy+BenDX/EKjqN6eUnsG2Lh9cpx+Ckua3Yi2XupO8ife9VELSg8iR7AT98yHQNyyaAL4ImVHcoQ==" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.2/mode/javascript/javascript.min.js" integrity="sha512-+tn2IYnLwD2J9p6Nrn/Dl7ag9lluHA0GAblT/vnMiJV8DU/iDsldgf+9XbEqZUee2ThyDtfmSDb+IDZ9u7jrSA==" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.2/codemirror.min.css" integrity="sha512-MWdvo/Qqcf4pY1ecQUB1uBn0qLp19U/qJ1Rpp2BDZeuBA7YsFEwkvqR/+aG4BroPiAYDunKJ6X8R/Pmdt3p7oA==" crossorigin="anonymous" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.2/theme/mbo.min.css" integrity="sha512-od4iTUzGO7D57XePY29GbKmPNZTDtZcSSTFOLg9Bse/uA8dznrj2wP+GgB72zmoOj6M/M1rXBip5bT8jvbgMlg==" crossorigin="anonymous" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.2/theme/mdn-like.min.css" integrity="sha512-d1mnXGBFE/kEcVYDWOvqqRQov8YZhS5Eg5i6kX8smrEcMFcFIYpXW000lKxquKR4KdheA0+IE6xSmsmumGYNiA==" crossorigin="anonymous" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.2/theme/ayu-mirage.min.css" integrity="sha512-McHJYTvQc4LZQBg2bCgKgDbvGWaSe2ZiDbc3UoMS+ihFI103kl54eKblXb8tBtwhLAh0Yoogy8VXkmZTekMlzA==" crossorigin="anonymous" />
-  <link href="css/deveb-s1n0n40/deveb.css" rel="stylesheet"> 
-  <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.11"></script>
-  <style>
-    #result {
-      background-color: cornflowerblue;
-    }
-    .CodeMirror {
-      font-family: 'Titillium Web', sans-serif;
-      font-size: 20px;
-      line-height: 1.5em;
-      display: block;
-    }
-  
-    .CodeMirror * {
-      font-family: 'Titillium Web', sans-serif;
-      font-size: 20px;
-      line-height: 1.5em;
-    }
-  
-    #target >  .CodeMirror * {
-      text-align: right;
-      color: #83a300;
-      padding-right: 5px;
-    }
-  
-    .text-token {
-      color: #8B949E;
-    }
-  
-    .operator-token {
-      color: #cda869;
-    }
-  
-    .number-token {
-      color: #79C0FF;
-    }
-  
-    .comment-token {
-      color: rgb(111, 66, 193);
-    }
-  
-    .money-symbol-token {
-      color: #ff7b72;
-    }
-  
-  .variable-token {
-    color: #690;
-  }
-  
-  .money-token {
-    color: rgb(245, 69, 69);
-  }
-  .variable-use-token {
-      background-color: white;
-      border-radius: 10px;
-      padding: 0px 5px;
-      color: #1f2430;
-  }
-  .variable-defination-token {
-      color: white;
-  }
-    #source { }
-    .CodeMirror-hscrollbar{overflow-x: hidden;}
-    .CodeMirror-vscrollbar{overflow-y: hidden;}
-.CodeMirror-scroll{padding:0 !important; margin:0 !important;}
-.CodeMirror-scroll{margin-top:17px !important; margin-left:17px !important;}
-
-    #editor {
-      border-radius: 10px;
-      border: 2px solid #1f2430;
-      padding: 30px;
-      background-color: #1f2430;
-      box-shadow: 0 8px 12px rgb(0 0 0 / 70%);
-    }
-  
-  .container { }
-    .clearfix:before,
-    .clearfix:after { content: " "; display: table; }
-    .clearfix:after { clear: both; }
-    .clearfix { *zoom: 1; }
-  
-    header {
-      font-family: 'Roboto', sans-serif;
-      font-size: 25px;
-      margin: 30px;
-    }
-  
-    .description {
-      font-family: 'Roboto', sans-serif;
-      font-size: 15px;
-      font-weight: 300;
-      margin: 10px 0;
-    }
-    .thin {
-      font-weight: 100;
-    }
-    .clearfix div{display: block; float:left; }
-    .CodeMirror-vscrollbar{overflow: hidden !important; display: none !important;}
-    .CodeMirror-sizer{min-width: 100% !important;border-right:0px;}
-  </style>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval';" />
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <title>Calculator for Peoples</title>
+    <script src="./src/js/jquery-2.2.4.min.js"></script>
+    <script src="./src/js/semantic.min.js"></script>
+    <script src="./src/js/codemirror.min.js"></script>
+    <script src="./src/js/vue.js"></script>
+    <script src="./src/js/moment-with-locales.min.js"></script>
+    <script type="module" src="./src/js/code.js"></script>
+    <link rel="stylesheet" href="./src/css/codemirror.css" />
+    <link rel="stylesheet" href="./src/css/semantic.min.css" />
+    <link rel="stylesheet" href="./src/css/ayu-mirage.min.css" />
+    <link rel="stylesheet" href="./src/css/all.min.css" />
+    <link rel="stylesheet" href="./src/css/style.css" />
 </head>
+
 <body>
-<noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
-<header>
-  <h1 data-gnl="o"><span class="thin">CALCULATOR FOR</span><b> PEOPLES</b></h1>
-  <div data-gnl="o" class="description">
-    It is easy to calculate, it is easy to use, it is free to use, it is free to share with your friends. <br>
-
-   </div>
-   <div class="bold" data-gnl="o" style="color:red; font-size:13px;">USE SCROLL UP/DOWN ON BOARD</div>
-</header>
-<div data-gnl="22 /24 _o" class="clearfix">
-  <div class="container">
-    <div id="editor">
-      <div data-gnl="14 /24" id="source" name="source"></div>
-      <div data-gnl="10 /24" id="target" name="target"></div>
+    <span id="app">
+        <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+        <div class="ui inverted fixed menu">
+            <div class="item">
+                <div class="ui scrolling dropdown">
+                    <input type="hidden" id="language" value="en">
+                    <div class="default text">Select choice</div>
+                    <i class="dropdown icon"></i>
+                    <div class="menu">
+                        <div class="item" data-value="en">English</div>
+                        <div class="item" data-value="tr">Türkçe</div>
+                    </div>
+                </div>
+            </div>
+            <div class="right item">
+                <a class="ui label blue large" v-on:click="update_currencies">
+                    <i class="fas fa-coins" v-if="!currency_updating"></i>&nbsp;
+                    <i class="fas fa-spinner fa-spin" v-if="currency_updating"></i>&nbsp; 
+                    <span v-if="!currency_updating"> 
+                        {{ current_status }} 
+                    </span>
+                    <span v-if="currency_updating"> 
+                        Currency Updating 
+                    </span>
+    </a>
     </div>
-  </div>
-</div>
-<script type="module">
-/* https://codepen.io/Souleste/pen/wvvwJWw */
-  window.editor = CodeMirror(document.getElementById("source"), {
-    value: `tomorrow + 3 weeks
-3/3/2021 to 3/3/2000
-12/02/2020 - 11680 days
-jan 28, 2019 - 14 months 33 days
-3:35 am + 7 hours 15 minutes
-
-date information = 11:30
-date information add 1 hour 1 minute 30 second
-
-8 / (45 - 20%)
-
-10% of 200 try
-180 is 10% of what
-
-10% off 200
-
-10 * 20 + 40
-
-$1k earninng / 5 people`,
-    mode:  "smartcalc",
-    //lineNumbers: true,
-    theme: "ayu-mirage",
-    styleSelectedText: true,
-    styleActiveLine: true,
-    electricChars: false,
-    smartIndent: false,
-    scrollbarStyle: 'null'
-  });
-
-  window.output = CodeMirror(document.getElementById("target"), {
-    value: "",
-    theme: "ayu-mirage",
-    mode:  "smartcalc",
-    readOnly: true,
-    //lineNumbers: true,
-    //scrollbarStyle: 'null'
-    readOnly: 'nocursor'
-  });
-
-  window.editor.setSize(null, 600);
-  window.output.setSize(null, 600);
-
-  var typeColors = {
-    0: "",
-    1: "number-token",
-    2: "money-symbol-token",
-    4: "operator-token",
-    5: "text-token",
-    7: "number-token",
-    8: "variable-token",
-    9: "comment-token",
-    10: "money-symbol-token",
-    11: "variable-use-token",
-    12: "variable-defination-token"
-  };
-
-  function editor_change() {
-    var marks = window.editor.getAllMarks();
-    marks.forEach(function (marker) {
-      marker.clear();
-    });
-
-    let code = window.editor.getValue();
-    let code_lines = code.split("\n");
-    var code_parts = [];
-
-    if (window.execute_codes) {
-      var results = window.execute_codes(code, function (results) {
-        console.log(results);
-
-        var result_texts = [];
-        for (var i = 0; i < results.length; ++i) {
-          if (!results[i].status) {
-            result_texts.push("");
-            continue;
-          }
-
-          result_texts.push(results[i].text);
-          for (var j = 0; j < results[i].tokens.length; ++j) {
-            window.editor.markText(
-                    {line: i, ch: results[i].tokens[j].start},
-                    {line: i, ch: results[i].tokens[j].end},
-                    {className: typeColors[results[i].tokens[j].type] });
-          }
-        }
-
-        window.output.getDoc().setValue(result_texts.join("\r\n"));
-      });
-    }
-
-    var scrollInfo = window.editor.getScrollInfo();
-    window.output.scrollTo(scrollInfo.left, scrollInfo.top);
-  }
-
-  window.editor.on("scroll", function() {
-    var scrollInfo = window.editor.getScrollInfo();
-    window.output.scrollTo(scrollInfo.left, scrollInfo.top);
-  });
-
-  window.editor.on("change", editor_change);
-
-  import { update_currency, initialize_system, process, default as init } from './pkg/libsmartcalc.js';
-
-  async function run() {
-    await init('./pkg/libsmartcalc_bg.wasm');
-
-    function execute_codes(code, callback) {
-      process(code, function(results) {
-        try {
-          callback(results);
-        } catch (err) {
-          console.log(err);
-        }
-      });
-    }
-
-    initialize_system();
-    window.update_currency = update_currency;
-    window.process = process;
-    window.execute_codes = execute_codes;
-
-    var currenciyRatesApi = "//www.floatrates.com/daily/usd.json";
-    $.getJSON( currenciyRatesApi, {
-      tagmode: "any",
-      format: "json"
-    })
-            .done(function( currencies ) {
-
-              Object.keys(currencies).forEach(function(currency) {
-                update_currency(currency, currencies[currency].rate, console.log);
-              });
-            });
-
-    editor_change();
-  }
-
-  run();
-</script>
-
+    </div>
+    <div id="source" name="source"></div>
+    <div id="general-result" name="general-result">
+        <div class="result">
+            1028 dkk<i class="fas fa-coins"></i>
+        </div>
+    </div>
+    </span>
 </body>
 
 </html>

@@ -21,6 +21,15 @@ function takeObject(idx) {
     return ret;
 }
 
+function addHeapObject(obj) {
+    if (heap_next === heap.length) heap.push(heap.length + 1);
+    const idx = heap_next;
+    heap_next = heap[idx];
+
+    heap[idx] = obj;
+    return idx;
+}
+
 let cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
 
 cachedTextDecoder.decode();
@@ -35,15 +44,6 @@ function getUint8Memory0() {
 
 function getStringFromWasm0(ptr, len) {
     return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len));
-}
-
-function addHeapObject(obj) {
-    if (heap_next === heap.length) heap.push(heap.length + 1);
-    const idx = heap_next;
-    heap_next = heap[idx];
-
-    heap[idx] = obj;
-    return idx;
 }
 
 function debugString(val) {
@@ -186,40 +186,6 @@ function addBorrowedObject(obj) {
     heap[--stack_pointer] = obj;
     return stack_pointer;
 }
-/**
-* @param {string} currency
-* @param {number} rate
-* @param {Function} callback
-*/
-export function update_currency(currency, rate, callback) {
-    try {
-        var ptr0 = passStringToWasm0(currency, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        var len0 = WASM_VECTOR_LEN;
-        wasm.update_currency(ptr0, len0, rate, addBorrowedObject(callback));
-    } finally {
-        heap[stack_pointer++] = undefined;
-    }
-}
-
-/**
-*/
-export function initialize_system() {
-    wasm.initialize_system();
-}
-
-/**
-* @param {string} data
-* @param {Function} callback
-*/
-export function process(data, callback) {
-    try {
-        var ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        var len0 = WASM_VECTOR_LEN;
-        wasm.process(ptr0, len0, addBorrowedObject(callback));
-    } finally {
-        heap[stack_pointer++] = undefined;
-    }
-}
 
 function handleError(f) {
     return function () {
@@ -230,6 +196,73 @@ function handleError(f) {
             wasm.__wbindgen_exn_store(addHeapObject(e));
         }
     };
+}
+/**
+*/
+export class SmartCalcWeb {
+
+    static __wrap(ptr) {
+        const obj = Object.create(SmartCalcWeb.prototype);
+        obj.ptr = ptr;
+
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.ptr;
+        this.ptr = 0;
+
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_smartcalcweb_free(ptr);
+    }
+    /**
+    * @returns {SmartCalcWeb}
+    */
+    static default() {
+        var ret = wasm.smartcalcweb_default();
+        return SmartCalcWeb.__wrap(ret);
+    }
+    /**
+    * @param {string} json_data
+    * @returns {SmartCalcWeb}
+    */
+    static load_from_json(json_data) {
+        var ptr0 = passStringToWasm0(json_data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len0 = WASM_VECTOR_LEN;
+        var ret = wasm.smartcalcweb_load_from_json(ptr0, len0);
+        return SmartCalcWeb.__wrap(ret);
+    }
+    /**
+    * @param {string} language
+    * @param {string} data
+    * @returns {any}
+    */
+    execute(language, data) {
+        var ptr0 = passStringToWasm0(language, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len0 = WASM_VECTOR_LEN;
+        var ptr1 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len1 = WASM_VECTOR_LEN;
+        var ret = wasm.smartcalcweb_execute(this.ptr, ptr0, len0, ptr1, len1);
+        return takeObject(ret);
+    }
+    /**
+    * @param {string} currency
+    * @param {number} rate
+    * @param {Function} callback
+    */
+    update_currency(currency, rate, callback) {
+        try {
+            var ptr0 = passStringToWasm0(currency, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            var len0 = WASM_VECTOR_LEN;
+            wasm.smartcalcweb_update_currency(this.ptr, ptr0, len0, rate, addBorrowedObject(callback));
+        } finally {
+            heap[stack_pointer++] = undefined;
+        }
+    }
 }
 
 async function load(module, imports) {
@@ -274,12 +307,12 @@ async function init(input) {
     imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
         takeObject(arg0);
     };
-    imports.wbg.__wbindgen_string_new = function(arg0, arg1) {
-        var ret = getStringFromWasm0(arg0, arg1);
-        return addHeapObject(ret);
-    };
     imports.wbg.__wbindgen_number_new = function(arg0) {
         var ret = arg0;
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbindgen_string_new = function(arg0, arg1) {
+        var ret = getStringFromWasm0(arg0, arg1);
         return addHeapObject(ret);
     };
     imports.wbg.__wbg_new_1abc33d4f9ba3e80 = function() {
