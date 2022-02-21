@@ -39,7 +39,7 @@ npm run pack:osx
 ```bash
 cargo build --target wasm32-unknown-unknown --release
 wasm-pack build --out-dir src/js/ --target web --no-typescript
-wasm-gc src/js/libsmartcalc_bg.wasm
+wasm-gc src/js/smartcalc_app_bg.wasm
 python -m SimpleHTTPServer
 ```
 

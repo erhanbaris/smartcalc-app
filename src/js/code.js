@@ -4,7 +4,7 @@
  * Licensed under the GNU General Public License v2.0.
  */
 
-import { SmartCalcWeb, default as init } from './libsmartcalc.js';
+import { SmartCalcWeb, default as init } from './smartcalc_app.js';
 import language from './language.js';
 
 const DEFAULT_LANGUAGE = 'en';
@@ -78,7 +78,7 @@ function isElectron() {
     return false;
 }
 
-await init('./src/js/libsmartcalc_bg.wasm');
+await init('./src/js/smartcalc_app_bg.wasm');
 const separators = getNumberSeparators();
 const calculator = SmartCalcWeb.default(separators.decimal, separators.thousand);
 
