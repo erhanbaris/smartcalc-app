@@ -71,6 +71,9 @@ date information add 1 hour 1 minute 30 second
 
 10 * 20 + 40
 
+22250mb - 250.1mb
+1024mb + (1024kb * 24)
+
 $1k earninng / 5 people`
             }
 
@@ -147,7 +150,7 @@ $1k earninng / 5 people`
         update_currencies: function() {
             var that = this;
             that.currency_updating = true;
-            var currenciyRatesApi = "//www.floatrates.com/daily/usd.json";
+            var currenciyRatesApi = "http://www.floatrates.com/daily/usd.json";
             $.getJSON(currenciyRatesApi, {
                     tagmode: "any",
                     format: "json"

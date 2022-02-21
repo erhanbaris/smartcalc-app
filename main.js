@@ -38,7 +38,7 @@ const template = [
         submenu: [{
             label: 'Learn More',
             click: async() => {
-                await shell.openExternal('https://github.com/erhanbaris/smartcalc-app')
+                await shell.openExternal('https://github.com/erhanbaris/smartcalc')
             }
         }]
     }
@@ -51,9 +51,7 @@ function createWindow() {
     const win = new BrowserWindow({
         width: 1024,
         height: 768,
-        transparent: true,
         show: false,
-        frame: false,
         center: true,
         webPreferences: {
             nodeIntegration: true,
@@ -61,8 +59,9 @@ function createWindow() {
         }
     });
 
+
     win.loadFile('index.html');
-    win.webContents.openDevTools();
+    //win.webContents.openDevTools();
     globalShortcut.register('CommandOrControl+Shift+R', () => {});
     globalShortcut.register('CmdOrCtrl+Shift+R', () => {});
     globalShortcut.register('CommandOrControl+R', () => {});
@@ -79,5 +78,5 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', function() {
-    if (isMac) app.quit()
+    app.quit()
 })
