@@ -1,0 +1,19 @@
+{
+    "name": "smartcalc-app",
+    "version": "1.0.1",
+    "description": "",
+    "main": "main.js",
+    "devDependencies": {
+        "electron": "^13.1.9",
+        "electron-packager": "^15.4.0"
+    },
+    "scripts": {
+        "start": "electron .",
+        "gen": "electron-packager .",
+        "pack:osx": "electron-packager . $npm_package_productName --app-version=$npm_package_version --out=dist/osx --platform=darwin  --prune=true --arch=x64 --icon=build/smartcalc.icns",
+        "pack:win32": "electron-packager . smartcalc-app --out=dist/win --platform=win32 --prune=true --arch=ia32 --icon=assets/smartcalc.ico",
+        "pack:win64": "electron-packager . smartcalc-app --out=dist/win --platform=win32 --prune=true --arch=x64 --icon=assets/smartcalc.ico"
+    },
+    "author": "",
+    "license": "GNU GENERAL PUBLIC LICENSE"
+}

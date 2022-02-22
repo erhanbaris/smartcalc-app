@@ -1,0 +1,10 @@
+.vscode
+target
+Cargo.lock
+/.idea
+.cargo-lock
+Cargo.lock
+package-lock.json
+dist/
+node_modules/
+smartcalc-*
