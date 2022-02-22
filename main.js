@@ -1,3 +1,9 @@
+/*
+ * smartcalc-app v1.0.1
+ * Copyright (c) Erhan BARIS (Ruslan Ognyanov Asenov)
+ * Licensed under the GNU General Public License v2.0.
+ */
+
 const { app, shell, BrowserWindow, Menu, globalShortcut } = require('electron');
 const isMac = process.platform === 'darwin';
 app.setName("SmartCalc");
