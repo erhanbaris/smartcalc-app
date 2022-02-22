@@ -35,6 +35,25 @@ function makeMarker(msg) {
     return marker;
 }
 
+function isElectron() {
+    // Renderer process
+    if (typeof window !== 'undefined' && typeof window.process === 'object' && window.process.type === 'renderer') {
+        return true;
+    }
+
+    // Main process
+    if (typeof process !== 'undefined' && typeof process.versions === 'object' && !!process.versions.electron) {
+        return true;
+    }
+
+    // Detect the user agent when the `nodeIntegration` option is set to true
+    if (typeof navigator === 'object' && typeof navigator.userAgent === 'string' && navigator.userAgent.indexOf('Electron') >= 0) {
+        return true;
+    }
+
+    return false;
+}
+
 await init('./src/js/libsmartcalc_bg.wasm');
 const calculator = SmartCalcWeb.default();
 
@@ -157,6 +176,10 @@ $1k earninng / 5 people`
             var that = this;
             that.currency_updating = true;
             var currenciyRatesApi = "http://www.floatrates.com/daily/usd.json";
+
+            if (!isElectron())
+                currenciyRatesApi = "//www.floatrates.com/daily/usd.json";
+
             $.getJSON(currenciyRatesApi, {
                     tagmode: "any",
                     format: "json"
