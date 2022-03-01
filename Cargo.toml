@@ -1,6 +1,6 @@
 [package]
 name = "smartcalc-app"
-version = "1.0.1"
+version = "1.0.2"
 authors = ["Erhan BARIS <erhanbaris@gmail.com>"]
 edition = "2018"
 
@@ -8,7 +8,7 @@ edition = "2018"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-smartcalc = { git = "https://github.com/erhanbaris/smartcalc", branch = "timezone" }
+smartcalc = "1.0.2"
 wasm-bindgen = { version = "0.2.79", default-features = false}
 console_error_panic_hook = "0.1.6"
 js-sys = "0.3.47"
