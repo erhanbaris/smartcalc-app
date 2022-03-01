@@ -28,23 +28,23 @@ pub struct SmartCalcWeb {
 #[wasm_bindgen]
 impl SmartCalcWeb {
     #[wasm_bindgen]
-    pub fn default(decimal_seperator: &str, thousand_separator: &str) -> Self {
+    pub fn default(decimal_seperator: &str, thousand_separator: &str, timezone: &str) -> Self {
         let mut smartcalc = SmartCalc::default();
         smartcalc.set_decimal_seperator(decimal_seperator.to_string());
         smartcalc.set_thousand_separator(thousand_separator.to_string());
+        smartcalc.set_timezone(timezone.to_string());
 
         SmartCalcWeb { smartcalc }
     }
     
     #[wasm_bindgen]
-    pub fn load_from_json(json_data: &str, decimal_seperator: &str, thousand_separator: &str) -> Self {
+    pub fn load_from_json(json_data: &str, decimal_seperator: &str, thousand_separator: &str, timezone: &str) -> Self {
         let mut smartcalc = SmartCalc::load_from_json(json_data);
         smartcalc.set_decimal_seperator(decimal_seperator.to_string());
         smartcalc.set_thousand_separator(thousand_separator.to_string());
+        smartcalc.set_timezone(timezone.to_string());
 
-        SmartCalcWeb {
-            smartcalc
-        }
+        SmartCalcWeb { smartcalc }
     }
 
     #[wasm_bindgen]

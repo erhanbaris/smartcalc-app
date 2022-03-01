@@ -80,7 +80,8 @@ function isElectron() {
 
 await init('./src/js/smartcalc_app_bg.wasm');
 const separators = getNumberSeparators();
-const calculator = SmartCalcWeb.default(separators.decimal, separators.thousand);
+const timezone = new Date().toLocaleDateString('en-US', { day: '2-digit', timeZoneName: 'short' }).slice(4);
+const calculator = SmartCalcWeb.default(separators.decimal, separators.thousand, timezone);
 
 new Vue({
     el: '#app',
