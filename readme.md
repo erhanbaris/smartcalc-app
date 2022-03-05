@@ -11,13 +11,13 @@ You can find original **smartcalc** library source code at [here](https://github
 
 
 ## Windows binaries
-[Download x64 application](https://github.com/erhanbaris/smartcalc/releases/download/v1.0.1/smartcalc-win64-v1.0.1.zip)
+[Download x64 application](https://github.com/erhanbaris/smartcalc/releases/download/v.1.0.4/smartcalc-win64-v1.0.4.zip)
 
-[Download x86 application](https://github.com/erhanbaris/smartcalc/releases/download/v1.0.1/smartcalc-win32-v1.0.1.zip)
+[Download x86 application](https://github.com/erhanbaris/smartcalc/releases/download/v.1.0.4/smartcalc-win-ia32-v1.0.4.zip)
 
 
 ## Macos binary
-[Download application](https://github.com/erhanbaris/smartcalc/releases/download/v1.0.1/smartcalc-osx-v1.0.1.zip)
+[Download application](https://github.com/erhanbaris/smartcalc/releases/download/v.1.0.4/smartcalc-osx-v1.0.4.zip)
 
 
 

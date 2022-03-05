@@ -1,5 +1,5 @@
 /*
- * smartcalc-app v1.0.1
+ * smartcalc-app v1.0.5
  * Copyright (c) Erhan BARIS (Ruslan Ognyanov Asenov)
  * Licensed under the GNU General Public License v2.0.
  */
@@ -72,6 +72,7 @@ impl SmartCalcWeb {
                                         "MONEY" =>    (true, 4, line_result.output.to_string()),
                                         "DURATION" => (true, 5, line_result.output.to_string()),
                                         "DATE" =>     (true, 6, line_result.output.to_string()),
+                                        "DATE_TIME" =>(true, 6, line_result.output.to_string()),
                                         "MEMORY" =>   (true, 7, line_result.output.to_string()),
                                         _ =>          (false, 0, "".to_string())
                                     }
