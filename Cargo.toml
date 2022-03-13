@@ -4,11 +4,14 @@ version = "1.0.5"
 authors = ["Erhan BARIS <erhanbaris@gmail.com>"]
 edition = "2018"
 
+[build]
+target = "wasm32-unknown-unknown"
+
 [lib]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-smartcalc = "1.0.5"
+smartcalc = { path = "../smartcalculator/smartcalc/" }
 wasm-bindgen = { version = "0.2.79", default-features = false}
 console_error_panic_hook = "0.1.6"
 js-sys = "0.3.47"

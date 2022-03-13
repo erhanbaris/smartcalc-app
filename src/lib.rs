@@ -4,15 +4,12 @@
  * Licensed under the GNU General Public License v2.0.
  */
 
- 
-
 extern crate console_error_panic_hook;
 
-use smartcalc::SmartCalcAstType;
+use smartcalc::*;
+use smartcalc::UiToken;
 use core::ops::Deref;
 use js_sys::*;
-
-use smartcalc::SmartCalc;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -23,6 +20,31 @@ pub fn init_panic_hook() {
 #[wasm_bindgen]
 pub struct SmartCalcWeb {
     smartcalc: SmartCalc
+}
+
+fn convert_uitoken(token: &UiToken) -> Object {
+    let start_ref       = JsValue::from("start");
+    let end_ref         = JsValue::from("end");
+    let type_ref        = JsValue::from("type");
+
+    let token_object = js_sys::Object::new();
+    let token_type = match token.ui_type {
+        UiTokenType::Number => 1,
+        UiTokenType::Symbol2 => 2,
+        UiTokenType::DateTime => 3,
+        UiTokenType::Operator => 4,
+        UiTokenType::Text => 5,
+        UiTokenType::Comment => 9,
+        UiTokenType::Symbol1 => 10,
+        UiTokenType::VariableUse => 11,
+        UiTokenType::VariableDefination => 12,
+        UiTokenType::Month => 13
+    };
+
+    Reflect::set(token_object.as_ref(), start_ref.as_ref(),  JsValue::from(token.start as u16).as_ref()).unwrap();
+    Reflect::set(token_object.as_ref(), end_ref.as_ref(),    JsValue::from(token.end as u16).as_ref()).unwrap();
+    Reflect::set(token_object.as_ref(), type_ref.as_ref(),   JsValue::from(token_type).as_ref()).unwrap();
+    token_object
 }
 
 #[wasm_bindgen]
@@ -66,15 +88,16 @@ impl SmartCalcWeb {
                             let (status, result_type, output) = match line_result.ast.deref() {
                                 SmartCalcAstType::Item(item) => {
                                     match item.type_name() {
-                                        "NUMBER" =>   (true, 1, line_result.output.to_string()),
-                                        "TIME" =>     (true, 2, line_result.output.to_string()),
-                                        "PERCENT" =>  (true, 3, line_result.output.to_string()),
-                                        "MONEY" =>    (true, 4, line_result.output.to_string()),
-                                        "DURATION" => (true, 5, line_result.output.to_string()),
-                                        "DATE" =>     (true, 6, line_result.output.to_string()),
-                                        "DATE_TIME" =>(true, 6, line_result.output.to_string()),
-                                        "MEMORY" =>   (true, 7, line_result.output.to_string()),
-                                        _ =>          (false, 0, "".to_string())
+                                        "NUMBER" =>       (true, 1, line_result.output.to_string()),
+                                        "TIME" =>         (true, 2, line_result.output.to_string()),
+                                        "PERCENT" =>      (true, 3, line_result.output.to_string()),
+                                        "MONEY" =>        (true, 4, line_result.output.to_string()),
+                                        "DURATION" =>     (true, 5, line_result.output.to_string()),
+                                        "DATE" =>         (true, 6, line_result.output.to_string()),
+                                        "DATE_TIME" =>    (true, 6, line_result.output.to_string()),
+                                        "MEMORY" =>       (true, 7, line_result.output.to_string()),
+                                        "DYNAMIC_TYPE" => (true, 7, line_result.output.to_string()),
+                                        _ =>              (false, 0, "".to_string())
                                     }
                                 },
                                 _ => (false, 0, "".to_string())
@@ -94,7 +117,7 @@ impl SmartCalcWeb {
                     /* Token generation */
                     let token_objects = js_sys::Array::new();
                     for token in result.ui_tokens.iter() {
-                        token_objects.push(&token.as_js_object().into());
+                        token_objects.push(&convert_uitoken(token));
                     }
                     Reflect::set(line_object.as_ref(), tokens_ref.as_ref(),      token_objects.as_ref()).unwrap();
                 },
