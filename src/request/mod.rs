@@ -6,10 +6,6 @@
 
 pub mod coin;
 
-use std::collections::BTreeMap;
-
-use smartcalc::SmartCalc;
-use smartcalc::TokenType;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;

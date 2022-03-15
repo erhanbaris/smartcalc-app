@@ -9,8 +9,8 @@ extern crate console_error_panic_hook;
 mod request;
 
 use smartcalc::*;
-use smartcalc::UiToken;
 use core::ops::Deref;
+use std::{collections::BTreeMap, rc::Rc, cell::RefCell};
 use js_sys::*;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::{JsFuture, future_to_promise};
@@ -136,22 +136,14 @@ impl SmartCalcWeb {
         callback.apply(&JsValue::null(), &arguments).unwrap();
     }
 
-    #[wasm_bindgen]
-    pub fn fetch_all(&mut self) -> Promise {
-        future_to_promise(async move {
-            let coins = match request::coin::query().await {
-                Ok(coins) => {
-                    web_sys::console::log_1(&"Fetched".into());
-                    coins
-                },
-                Err(error) => {
-                    web_sys::console::log_1(&error);
-                    Vec::new()
-                }
-            };
-            Ok(JsValue::UNDEFINED)
-        })
-    }
+}
+
+#[wasm_bindgen]
+pub fn fetch_all(smartcalc: &mut SmartCalcWeb, callback: &Function) -> Result<JsValue, JsValue> {
+    let callback = callback.clone();
+    let coin = request::coin::configure(&mut smartcalc.smartcalc);
+    coin.configure(&mut smartcalc.smartcalc);
+    callback.call1(&JsValue::NULL, &JsValue::from_str("Hello world!"))
 }
 
 #[wasm_bindgen]

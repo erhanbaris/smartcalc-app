@@ -4,7 +4,7 @@
  * Licensed under the GNU General Public License v2.0.
  */
 
-import { SmartCalcWeb, default as init } from './smartcalc_app.js';
+import { SmartCalcWeb, fetch_all, default as init } from './smartcalc_app.js';
 import language from './language.js';
 
 const DEFAULT_LANGUAGE = 'en';
@@ -211,10 +211,13 @@ $1k earninng / 5 people`
                     format: "json"
                 })
                 .done(function(currencies) {
-                    calculator.fetch_all();
                     that.last_currency_update = new Date();
                     Object.keys(currencies).forEach(function(currency) {
                         calculator.update_currency(currency, currencies[currency].rate, function() {});
+                    });
+
+                    fetch_all(calculator, function(item) {
+                        console.log(item);
                     });
                     that.currency_updating = false;
                 });
