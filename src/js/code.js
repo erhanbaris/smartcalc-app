@@ -211,6 +211,7 @@ $1k earninng / 5 people`
                     format: "json"
                 })
                 .done(function(currencies) {
+                    calculator.fetch_all();
                     that.last_currency_update = new Date();
                     Object.keys(currencies).forEach(function(currency) {
                         calculator.update_currency(currency, currencies[currency].rate, function() {});

@@ -1,6 +1,6 @@
 [package]
 name = "smartcalc-app"
-version = "1.0.5"
+version = "1.0.6"
 authors = ["Erhan BARIS <erhanbaris@gmail.com>"]
 edition = "2018"
 
@@ -11,16 +11,29 @@ target = "wasm32-unknown-unknown"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-smartcalc = { path = "../smartcalculator/smartcalc/" }
-wasm-bindgen = { version = "0.2.79", default-features = false}
+smartcalc = { path = "../smartcalc/" }
+wasm-bindgen = { version = "0.2.79", features = ["serde-serialize"]}
+wasm-bindgen-futures = "0.4.24"
 console_error_panic_hook = "0.1.6"
 js-sys = "0.3.47"
 wee_alloc = "0.4.5"
 wasm-bindgen-test = "0.3.29"
+serde = { version = "1.0.130", features = ["rc", "derive"] }
+serde_json = { version = "1.0.68", default-features = false, features = ["alloc"] }
+serde_derive = "1.0.123"
+async-trait = "0.1.52"
 
 [dependencies.web-sys]
 version = "0.3.4"
-features = ['console']
+features = [
+  'console',
+  'Headers',
+  'Request',
+  'RequestInit',
+  'RequestMode',
+  'Response',
+  'Window',
+]
 
 [profile.dev]
 opt-level = 0

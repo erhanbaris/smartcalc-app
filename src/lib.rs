@@ -1,16 +1,19 @@
 /*
- * smartcalc-app v1.0.5
+ * smartcalc-app v1.0.6
  * Copyright (c) Erhan BARIS (Ruslan Ognyanov Asenov)
  * Licensed under the GNU General Public License v2.0.
  */
 
 extern crate console_error_panic_hook;
 
+mod request;
+
 use smartcalc::*;
 use smartcalc::UiToken;
 use core::ops::Deref;
 use js_sys::*;
 use wasm_bindgen::prelude::*;
+use wasm_bindgen_futures::{JsFuture, future_to_promise};
 
 #[wasm_bindgen]
 pub fn init_panic_hook() {
@@ -52,16 +55,6 @@ impl SmartCalcWeb {
     #[wasm_bindgen]
     pub fn default(decimal_seperator: &str, thousand_separator: &str, timezone: &str) -> Self {
         let mut smartcalc = SmartCalc::default();
-        smartcalc.set_decimal_seperator(decimal_seperator.to_string());
-        smartcalc.set_thousand_separator(thousand_separator.to_string());
-        smartcalc.set_timezone(timezone.to_string());
-
-        SmartCalcWeb { smartcalc }
-    }
-    
-    #[wasm_bindgen]
-    pub fn load_from_json(json_data: &str, decimal_seperator: &str, thousand_separator: &str, timezone: &str) -> Self {
-        let mut smartcalc = SmartCalc::load_from_json(json_data);
         smartcalc.set_decimal_seperator(decimal_seperator.to_string());
         smartcalc.set_thousand_separator(thousand_separator.to_string());
         smartcalc.set_timezone(timezone.to_string());
@@ -142,6 +135,23 @@ impl SmartCalcWeb {
         arguments.push(&JsValue::from(format!("Currency({}) rate updated", currency)));
         callback.apply(&JsValue::null(), &arguments).unwrap();
     }
+
+    #[wasm_bindgen]
+    pub fn fetch_all(&mut self) -> Promise {
+        future_to_promise(async move {
+            let coins = match request::coin::query().await {
+                Ok(coins) => {
+                    web_sys::console::log_1(&"Fetched".into());
+                    coins
+                },
+                Err(error) => {
+                    web_sys::console::log_1(&error);
+                    Vec::new()
+                }
+            };
+            Ok(JsValue::UNDEFINED)
+        })
+    }
 }
 
 #[wasm_bindgen]
@@ -169,7 +179,7 @@ mod tests {
 
     #[wasm_bindgen_test]
     fn state_from_dom_simple() {
-        let calculator = SmartCalcWeb::default(",", ".");
+        let calculator = SmartCalcWeb::default(",", ".", "UTC");
         calculator.execute("en", r"
         tomorrow + 3 weeks
         3/3/2021 to 3/3/2000
