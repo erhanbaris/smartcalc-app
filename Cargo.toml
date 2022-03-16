@@ -11,7 +11,7 @@ target = "wasm32-unknown-unknown"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-smartcalc = { path = "../smartcalculator/smartcalc" }
+smartcalc = { path = "../smartcalc" }
 wasm-bindgen = { version = "0.2.79", features = ["serde-serialize"]}
 wasm-bindgen-futures = "0.4.24"
 console_error_panic_hook = "0.1.6"

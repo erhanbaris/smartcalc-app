@@ -16,12 +16,18 @@ pub async fn get<T: for<'a> serde::Deserialize<'a>>(url: String) -> Result<T, Js
     opts.method("GET");
 
     let request = Request::new_with_str_and_init(&url, &opts)?;
-    let window = web_sys::window().unwrap();
+    let window = match web_sys::window() {
+        Some(window) => window,
+        None => return Err("window not found".into())
+    };
     let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
 
     assert!(resp_value.is_instance_of::<Response>());
-    let resp: Response = resp_value.dyn_into().unwrap();
+    let resp: Response = resp_value.dyn_into()?;
     let json = JsFuture::from(resp.json()?).await?;
-    let branch_info: T = json.into_serde().unwrap();
-    Ok(branch_info)
+    let data: T = match json.into_serde() {
+        Ok(data) => data,
+        Err(error) => return Err(format!("JSON parse error: {:?}", error).into())
+    };
+    Ok(data)
 }

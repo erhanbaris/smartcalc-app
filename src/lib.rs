@@ -143,75 +143,22 @@ pub fn fetch_all(smartcalc: &mut SmartCalcWeb, callback: &Function) -> Result<Js
     let callback = callback.clone();
     let coin = request::coin::configure(&mut smartcalc.smartcalc);
     coin.configure(&mut smartcalc.smartcalc);
-    callback.call1(&JsValue::NULL, &JsValue::from_str("Hello world!"))
+    callback.call1(&JsValue::NULL, &JsValue::from_str(&coin.name()))
 }
-
-#[wasm_bindgen]
-extern "C" {
-    // Use `js_namespace` here to bind `console.log(..)` instead of just
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-
-    // The `console.log` is quite polymorphic, so we can bind it with multiple
-    // signatures. Note that we need to use `js_name` to ensure we always call
-    // `log` in JS.
-    #[wasm_bindgen(js_namespace = console, js_name = log)]
-    fn log_u32(a: u32);
-
-    // Multiple arguments too!
-    #[wasm_bindgen(js_namespace = console, js_name = log)]
-    fn log_many(a: &str, b: &str);
-}
-
 
 #[cfg(test)]
 mod tests {
     use wasm_bindgen_test::*;
+    use crate::fetch_all;
+
     use super::SmartCalcWeb;
 
     #[wasm_bindgen_test]
     fn state_from_dom_simple() {
-        let calculator = SmartCalcWeb::default(",", ".", "UTC");
-        calculator.execute("en", r"
-        tomorrow + 3 weeks
-        3/3/2021 to 3/3/2000
-        12/02/2020 - 11680 days
-        jan 28, 2019 - 14 months 33 days
-        3:35 am + 7 hours 15 minutes
-        
-        date information = 11:30
-        date information add 1 hour 1 minute 30 second
-        
-        8 / (45 - 20%)
-        
-        10% of 200 try
-        180 is 10% of what
-        
-        10% off 200
-        
-        10 * 20 + 40
-        
-        $1k earninng / 5 people
-        tomorrow + 3 weeks
-        3/3/2021 to 3/3/2000
-        12/02/2020 - 11680 days
-        jan 28, 2019 - 14 months 33 days
-        3:35 am + 7 hours 15 minutes
-        
-        date information = 11:30
-        date information add 1 hour 1 minute 30 second
-        
-        8 / (45 - 20%)
-        
-        10% of 200 try
-        180 is 10% of what
-        
-        10% off 200
-        1024mb + (1024kb * 24)
-        
-        10 * 20 + 40
-        
-        $1k earninng / 5 people");
+        let mut calculator = SmartCalcWeb::default(",", ".", "UTC");
+        let callback = js_sys::Function::new_with_args("","");
+        fetch_all(&mut calculator, &callback);
+        calculator.execute("en", r"coin BTC");
         assert_eq!(1, 1);
     }
 }

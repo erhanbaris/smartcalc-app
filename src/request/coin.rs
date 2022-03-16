@@ -11,11 +11,10 @@ use std::rc::Rc;
 
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
-use smartcalc::NumberType;
 use smartcalc::SmartCalcAstType;
 use smartcalc::SmartCalc;
+use smartcalc::SmartCalcConfig;
 use smartcalc::TokenType;
-use wasm_bindgen::JsValue;
 use smartcalc::RuleTrait;
 use async_trait::async_trait;
 use wasm_bindgen_futures::spawn_local;
@@ -63,7 +62,7 @@ pub trait ComponentTrait: RuleTrait {
 impl Coin {
     pub fn new(smartcalc: &mut SmartCalc) -> Rc<Self> {
         let data = Rc::new(Self::default());
-        smartcalc.add_rule("en".to_string(), vec!["coin {TEXT:coin}".to_string()], data.clone());
+        smartcalc.add_rule("en".to_string(), vec!["coin {TEXT:coin}".to_string(), "coin {TEXT:coin} {GROUP:conversion:conversion_group} {TEXT:target}".to_string()], data.clone());
         data
     }
 }
@@ -76,9 +75,12 @@ impl ComponentTrait for Coin {
     fn configure(&self, _: &mut SmartCalc) {
         let coins = self.coins.clone();
         spawn_local(async move {
-            *coins.borrow_mut() = match get::<CoinData>("https://api.coinpaprika.com/v1/coins".to_string()).await {
+            *coins.borrow_mut() = match get::<CoinData>("https://api.coincap.io/v2/assets".to_string()).await {
                 Ok(coins) => coins.data,
-                Err(_) => Vec::new()
+                Err(error) => {
+                    web_sys::console::log_1(&error);
+                    Vec::new()
+                }
             };
         });
     }
@@ -111,11 +113,11 @@ impl RuleTrait for Coin {
     fn name(&self) -> String {
         "Coin".to_string()
     }
-    fn call(&self, fields: &BTreeMap<String, TokenType>) -> Option<TokenType> {
+    fn call(&self, smartcalc: &SmartCalcConfig, fields: &BTreeMap<String, TokenType>) -> Option<TokenType> {
         if fields.contains_key("coin") {
             let coin = get_text("coin", fields).unwrap();
             return match self.coins.borrow().iter().find(|item| item.symbol == coin || item.name == coin) {
-                Some(coin) => Some(TokenType::Number(coin.price_usd.parse::<f64>().unwrap(), NumberType::Decimal)),
+                Some(coin) => Some(TokenType::Money(coin.price_usd.parse::<f64>().unwrap(), smartcalc.get_currency("usd".to_string()).unwrap())),
                 None => None
             };
         } else {
