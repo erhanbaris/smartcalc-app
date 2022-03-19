@@ -1,10 +1,10 @@
 /*
- * smartcalc-app v1.0.6
+ * smartcalc-app v1.0.7
  * Copyright (c) Erhan BARIS (Ruslan Ognyanov Asenov)
  * Licensed under the GNU General Public License v2.0.
  */
 
-import { SmartCalcWeb, fetch_all, default as init } from './smartcalc_app.js';
+import { SmartCalcWeb, create_smartcalc, default as init } from './smartcalc_app.js';
 import language from './language.js';
 
 const DEFAULT_LANGUAGE = 'en';
@@ -81,7 +81,9 @@ function isElectron() {
 await init('./src/js/smartcalc_app_bg.wasm');
 const separators = getNumberSeparators();
 const timezone = new Date().toLocaleDateString('en-US', { day: '2-digit', timeZoneName: 'short' }).slice(4);
-const calculator = SmartCalcWeb.default(separators.decimal, separators.thousand, timezone);
+const calculator = await create_smartcalc(separators.decimal, separators.thousand, timezone, function(item) {
+    console.log(item);
+});
 
 new Vue({
     el: '#app',
@@ -214,10 +216,6 @@ $1k earninng / 5 people`
                     that.last_currency_update = new Date();
                     Object.keys(currencies).forEach(function(currency) {
                         calculator.update_currency(currency, currencies[currency].rate, function() {});
-                    });
-
-                    fetch_all(calculator, function(item) {
-                        console.log(item);
                     });
                     that.currency_updating = false;
                 });

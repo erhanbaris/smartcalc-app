@@ -1,5 +1,5 @@
 /*
- * smartcalc-app v1.0.6
+ * smartcalc-app v1.0.7
  * Copyright (c) Erhan BARIS (Ruslan Ognyanov Asenov)
  * Licensed under the GNU General Public License v2.0.
  */
@@ -9,11 +9,11 @@ extern crate console_error_panic_hook;
 mod request;
 
 use smartcalc::*;
+use wasm_bindgen_futures::future_to_promise;
 use core::ops::Deref;
-use std::{collections::BTreeMap, rc::Rc, cell::RefCell};
 use js_sys::*;
+use web_sys::console;
 use wasm_bindgen::prelude::*;
-use wasm_bindgen_futures::{JsFuture, future_to_promise};
 
 #[wasm_bindgen]
 pub fn init_panic_hook() {
@@ -135,30 +135,35 @@ impl SmartCalcWeb {
         arguments.push(&JsValue::from(format!("Currency({}) rate updated", currency)));
         callback.apply(&JsValue::null(), &arguments).unwrap();
     }
-
 }
 
 #[wasm_bindgen]
-pub fn fetch_all(smartcalc: &mut SmartCalcWeb, callback: &Function) -> Result<JsValue, JsValue> {
-    let callback = callback.clone();
-    let coin = request::coin::configure(&mut smartcalc.smartcalc);
-    coin.configure(&mut smartcalc.smartcalc);
-    callback.call1(&JsValue::NULL, &JsValue::from_str(&coin.name()))
+pub async fn create_smartcalc(decimal_seperator: String, thousand_separator: String, timezone: String, callback: Function) -> Promise {
+    future_to_promise(async move {
+        let mut smartcalc = SmartCalcWeb::default(&decimal_seperator, &thousand_separator, &timezone); 
+        match request::coin::configure(&mut smartcalc.smartcalc).await {
+            Ok(coin) => { callback.call1(&JsValue::NULL, &JsValue::from_str(&coin.name()))?; },
+            Err(_) => console::log_1(&"Error".into())
+        };
+        
+        Ok(JsValue::from(smartcalc))
+    })
 }
+
 
 #[cfg(test)]
 mod tests {
+    use smartcalc::SmartCalc;
+    use wasm_bindgen_futures::JsFuture;
     use wasm_bindgen_test::*;
-    use crate::fetch_all;
 
-    use super::SmartCalcWeb;
+    use crate::create_smartcalc;
 
     #[wasm_bindgen_test]
-    fn state_from_dom_simple() {
-        let mut calculator = SmartCalcWeb::default(",", ".", "UTC");
+    async fn state_from_dom_simple() {
         let callback = js_sys::Function::new_with_args("","");
-        fetch_all(&mut calculator, &callback);
-        calculator.execute("en", r"coin BTC");
+        let calculator = JsFuture::from(create_smartcalc(",".to_string(), ".".to_string(), "UTC".to_string(), callback).await).await.into();
+        calculator.execute("en", r"10 coin BTC");
         assert_eq!(1, 1);
     }
 }

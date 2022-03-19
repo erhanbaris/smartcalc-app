@@ -1,5 +1,5 @@
 /*
- * smartcalc-app v1.0.6
+ * smartcalc-app v1.0.7
  * Copyright (c) Erhan BARIS (Ruslan Ognyanov Asenov)
  * Licensed under the GNU General Public License v2.0.
  */
@@ -21,8 +21,6 @@ pub async fn get<T: for<'a> serde::Deserialize<'a>>(url: String) -> Result<T, Js
         None => return Err("window not found".into())
     };
     let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
-
-    assert!(resp_value.is_instance_of::<Response>());
     let resp: Response = resp_value.dyn_into()?;
     let json = JsFuture::from(resp.json()?).await?;
     let data: T = match json.into_serde() {

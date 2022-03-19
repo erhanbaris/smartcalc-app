@@ -1,5 +1,5 @@
 /*
- * smartcalc-app v1.0.6
+ * smartcalc-app v1.0.7
  * Copyright (c) Erhan BARIS (Ruslan Ognyanov Asenov)
  * Licensed under the GNU General Public License v2.0.
  */
@@ -16,8 +16,6 @@ use smartcalc::SmartCalc;
 use smartcalc::SmartCalcConfig;
 use smartcalc::TokenType;
 use smartcalc::RuleTrait;
-use async_trait::async_trait;
-use wasm_bindgen_futures::spawn_local;
 use crate::request::get;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -53,36 +51,18 @@ pub struct Coin {
     coins: Rc<RefCell<Vec<CoinItem>>>
 }
 
-#[async_trait]
-pub trait ComponentTrait: RuleTrait {
-    fn update(&self);
-    fn configure(&self, smartcalc: &mut SmartCalc);
+#[derive(Debug)]
+pub enum ComponentError {
+    Error(String)
 }
 
-impl Coin {
-    pub fn new(smartcalc: &mut SmartCalc) -> Rc<Self> {
-        let data = Rc::new(Self::default());
-        smartcalc.add_rule("en".to_string(), vec!["coin {TEXT:coin}".to_string(), "coin {TEXT:coin} {GROUP:conversion:conversion_group} {TEXT:target}".to_string()], data.clone());
-        data
-    }
+pub trait ComponentTrait: RuleTrait {
+    fn update(&self) -> Result<(), ComponentError>;
 }
 
 impl ComponentTrait for Coin {
-    fn update(&self) {
-
-    }
-
-    fn configure(&self, _: &mut SmartCalc) {
-        let coins = self.coins.clone();
-        spawn_local(async move {
-            *coins.borrow_mut() = match get::<CoinData>("https://api.coincap.io/v2/assets".to_string()).await {
-                Ok(coins) => coins.data,
-                Err(error) => {
-                    web_sys::console::log_1(&error);
-                    Vec::new()
-                }
-            };
-        });
+    fn update(&self) -> Result<(), ComponentError> {
+        Ok(())
     }
 }
 
@@ -113,24 +93,43 @@ impl RuleTrait for Coin {
     fn name(&self) -> String {
         "Coin".to_string()
     }
+
     fn call(&self, smartcalc: &SmartCalcConfig, fields: &BTreeMap<String, TokenType>) -> Option<TokenType> {
         if fields.contains_key("coin") {
-            let coin = get_text("coin", fields).unwrap();
-            return match self.coins.borrow().iter().find(|item| item.symbol == coin || item.name == coin) {
-                Some(coin) => Some(TokenType::Money(coin.price_usd.parse::<f64>().unwrap(), smartcalc.get_currency("usd".to_string()).unwrap())),
-                None => None
+            let coin_name = get_text("coin", fields).unwrap().to_lowercase();
+            let coin = match self.coins.borrow().iter().find(|item| item.symbol.to_lowercase() == coin_name || item.name.to_lowercase() == coin_name) {
+                Some(coin) => coin.price_usd.parse::<f64>().unwrap(),
+                None => return None
             };
+
+            let price = match get_number("count", fields) {
+                Some(count) => count,
+                None => 1.0
+            } * coin;
+
+            return Some(TokenType::Money(price, smartcalc.get_currency("usd".to_string()).unwrap()));
         } else {
             return None;
         }
      }
 }
 
-pub fn configure(smartcalc: &mut SmartCalc) -> Rc<dyn ComponentTrait> {
-    Coin::new(smartcalc)
+impl Coin {
+    async fn configure(&self, _: &mut SmartCalc) -> Result<(), ComponentError> {
+        *self.coins.borrow_mut() = match get::<CoinData>("https://api.coincap.io/v2/assets".to_string()).await {
+            Ok(data) => data.data,
+            Err(error) => {
+                return Err(ComponentError::Error(format!("{:?}", error)))
+            }
+        };
+
+        Ok(())
+    }
 }
 
-/*pub async fn query() -> Result<Coinda, JsValue> {
-    get("https://api.coinpaprika.com/v1/coins".to_string()).await
+pub async fn configure(smartcalc: &mut SmartCalc) -> Result<Rc<dyn ComponentTrait>, ComponentError> {
+    let coin = Rc::new(Coin::default());
+    coin.configure(smartcalc).await?;
+    smartcalc.add_rule("en".to_string(), vec!["{NUMBER:count} {TEXT:coin}".to_string(), "{TEXT:coin}".to_string()], coin.clone());
+    Ok(coin)
 }
-*/
