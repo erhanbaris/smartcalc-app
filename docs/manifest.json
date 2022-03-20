@@ -1,0 +1,16 @@
+{
+    "name": "SmartCalc Web Application",
+    "short_name": "smartcalc-app",
+    "icons": [{
+        "src": "./smartcalc.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+    ],
+    "lang": "en-US",
+    "id": "/index.html",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "white",
+    "theme_color": "white"
+  }

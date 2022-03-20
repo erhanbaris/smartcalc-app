@@ -1,169 +1,187 @@
-/*
- * smartcalc-app v1.0.7
- * Copyright (c) Erhan BARIS (Ruslan Ognyanov Asenov)
- * Licensed under the GNU General Public License v2.0.
- */
+use eframe::{egui::{self, FontDefinitions, FontData, Button, Widget, RichText}, epi, epaint::{FontFamily, FontId, Color32}};
+use chrono_tz::Tz;
+use chrono_tz::OffsetName;
+use chrono::{TimeZone, Local};
 
-extern crate console_error_panic_hook;
-
-mod request;
-
-use smartcalc::*;
-use wasm_bindgen_futures::future_to_promise;
-use core::ops::Deref;
-use js_sys::*;
-use web_sys::console;
-use wasm_bindgen::prelude::*;
-
-#[wasm_bindgen]
-pub fn init_panic_hook() {
-    console_error_panic_hook::set_once();
-}
-
-#[wasm_bindgen]
-pub struct SmartCalcWeb {
+#[cfg_attr(feature = "persistence", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(feature = "persistence", serde(default))] // if we add new fields, give them default values when deserializing old state
+pub struct SmartcalcApp {
+    #[cfg_attr(feature = "persistence", serde(skip))]
+    content: String,
+    
+    #[cfg_attr(feature = "persistence", serde(skip))]
+    outputs: Vec<String>,
+    
     smartcalc: SmartCalc
 }
 
-fn convert_uitoken(token: &UiToken) -> Object {
-    let start_ref       = JsValue::from("start");
-    let end_ref         = JsValue::from("end");
-    let type_ref        = JsValue::from("type");
+impl Default for SmartcalcApp {
+    fn default() -> Self {
+        let timezone = match localzone::get_local_zone() {
+            Some(tz) => match tz.parse::<Tz>() {
+                Ok(tz) => {
+                    let date_time = Local::today().naive_local();
+                    tz.offset_from_utc_date(&date_time).abbreviation().to_string()
+                },
+                Err(_) => "UTC".to_string()
+            },
+            None => "UTC".to_string()
+        };
+    
+        let mut app = SmartCalc::default();
+        
+        app.set_decimal_seperator(",".to_string());
+        app.set_thousand_separator(".".to_string());
+        app.set_timezone(timezone).unwrap();
 
-    let token_object = js_sys::Object::new();
-    let token_type = match token.ui_type {
-        UiTokenType::Number => 1,
-        UiTokenType::Symbol2 => 2,
-        UiTokenType::DateTime => 3,
-        UiTokenType::Operator => 4,
-        UiTokenType::Text => 5,
-        UiTokenType::Comment => 9,
-        UiTokenType::Symbol1 => 10,
-        UiTokenType::VariableUse => 11,
-        UiTokenType::VariableDefination => 12,
-        UiTokenType::Month => 13
-    };
-
-    Reflect::set(token_object.as_ref(), start_ref.as_ref(),  JsValue::from(token.start as u16).as_ref()).unwrap();
-    Reflect::set(token_object.as_ref(), end_ref.as_ref(),    JsValue::from(token.end as u16).as_ref()).unwrap();
-    Reflect::set(token_object.as_ref(), type_ref.as_ref(),   JsValue::from(token_type).as_ref()).unwrap();
-    token_object
+        Self {
+            content: "".to_owned(),
+            outputs: Vec::new(),
+            smartcalc: app
+        }
+    }
 }
 
-#[wasm_bindgen]
-impl SmartCalcWeb {
-    #[wasm_bindgen]
-    pub fn default(decimal_seperator: &str, thousand_separator: &str, timezone: &str) -> Self {
-        let mut smartcalc = SmartCalc::default();
-        smartcalc.set_decimal_seperator(decimal_seperator.to_string());
-        smartcalc.set_thousand_separator(thousand_separator.to_string());
-        smartcalc.set_timezone(timezone.to_string());
-
-        SmartCalcWeb { smartcalc }
+impl epi::App for SmartcalcApp {
+    fn name(&self) -> &str {
+        "eframe template"
     }
 
-    #[wasm_bindgen]
-    pub fn execute(&self, language: &str, data: &str) -> JsValue {
-        self.smartcalc.execute(language, data);
-        let status_ref      = JsValue::from("status");
-        let result_type_ref = JsValue::from("type");
-        let text_ref        = JsValue::from("output");
-        let tokens_ref      = JsValue::from("tokens");
-
-        let line_items = js_sys::Array::new();
-        let execute_result = self.smartcalc.execute(language, data);
-        for result in execute_result.lines {
-            let line_object = js_sys::Object::new();
-            match result {
-                Some(result) => {
-                    match &result.result {
-                        Ok(line_result) => {
-                            let (status, result_type, output) = match line_result.ast.deref() {
-                                SmartCalcAstType::Item(item) => {
-                                    match item.type_name() {
-                                        "NUMBER" =>       (true, 1, line_result.output.to_string()),
-                                        "TIME" =>         (true, 2, line_result.output.to_string()),
-                                        "PERCENT" =>      (true, 3, line_result.output.to_string()),
-                                        "MONEY" =>        (true, 4, line_result.output.to_string()),
-                                        "DURATION" =>     (true, 5, line_result.output.to_string()),
-                                        "DATE" =>         (true, 6, line_result.output.to_string()),
-                                        "DATE_TIME" =>    (true, 6, line_result.output.to_string()),
-                                        "MEMORY" =>       (true, 7, line_result.output.to_string()),
-                                        "DYNAMIC_TYPE" => (true, 7, line_result.output.to_string()),
-                                        _ =>              (false, 0, "".to_string())
-                                    }
-                                },
-                                _ => (false, 0, "".to_string())
-                            };
-
-                            Reflect::set(line_object.as_ref(), status_ref.as_ref(),      JsValue::from(status).as_ref()).unwrap();
-                            Reflect::set(line_object.as_ref(), result_type_ref.as_ref(), JsValue::from(result_type).as_ref()).unwrap();
-                            Reflect::set(line_object.as_ref(), text_ref.as_ref(),        JsValue::from(&output[..]).as_ref()).unwrap();
-                        },
-                        Err(error) => {
-                            Reflect::set(line_object.as_ref(), status_ref.as_ref(),      JsValue::from(false).as_ref()).unwrap();
-                            Reflect::set(line_object.as_ref(), result_type_ref.as_ref(), JsValue::from(0).as_ref()).unwrap();
-                            Reflect::set(line_object.as_ref(), text_ref.as_ref(),        JsValue::from(&error[..]).as_ref()).unwrap();
-                        }
-                    };
-
-                    /* Token generation */
-                    let token_objects = js_sys::Array::new();
-                    for token in result.ui_tokens.iter() {
-                        token_objects.push(&convert_uitoken(token));
-                    }
-                    Reflect::set(line_object.as_ref(), tokens_ref.as_ref(),      token_objects.as_ref()).unwrap();
-                },
-
-                None => {
-                    Reflect::set(line_object.as_ref(), status_ref.as_ref(),      JsValue::from(false).as_ref()).unwrap();
-                    Reflect::set(line_object.as_ref(), result_type_ref.as_ref(), JsValue::from(0).as_ref()).unwrap();
-                    Reflect::set(line_object.as_ref(), text_ref.as_ref(),        JsValue::from("").as_ref()).unwrap();
-                }
-            }
-            line_items.push(&line_object.into());
+    fn setup(&mut self, ctx: &egui::Context, _frame: &epi::Frame, _storage: Option<&dyn epi::Storage>) {
+        #[cfg(feature = "persistence")]
+        if let Some(storage) = _storage {
+            *self = epi::get_value(storage, epi::APP_KEY).unwrap_or_default()
         }
 
-        line_items.into()
+        let mut font = FontDefinitions::default();
+        font.font_data.insert("TitilliumWeb".to_owned(),FontData::from_static(include_bytes!("../fonts/TitilliumWeb-Regular.ttf")));
+        ctx.set_fonts(font)
     }
 
-    #[wasm_bindgen]
-    pub fn update_currency(&mut self, currency: &str, rate: f64, callback: &js_sys::Function) {
-        self.smartcalc.update_currency(currency, rate);
+    #[cfg(feature = "persistence")]
+    fn save(&mut self, storage: &mut dyn epi::Storage) {
+        epi::set_value(storage, epi::APP_KEY, self);
+    }
     
-        let arguments = js_sys::Array::new();
-        arguments.push(&JsValue::from(format!("Currency({}) rate updated", currency)));
-        callback.apply(&JsValue::null(), &arguments).unwrap();
+    fn update(&mut self, ctx: &egui::Context, frame: &epi::Frame) {
+        let Self { content, outputs, smartcalc } = self;
+
+        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
+            egui::menu::bar(ui, |ui| {
+                ui.menu_button("SmartCalc", |ui| {
+                    if ui.button("About").clicked() {
+                        
+                    }
+
+                    if ui.button("Quit").clicked() {
+                        frame.quit();
+                    }
+                });
+
+                Button::new(RichText::new("🔄 Update Currencies").color(Color32::WHITE))
+                    .fill(Color32::from_rgb(33, 133, 208))
+                    .ui(ui);
+            });
+        });
+
+        egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                egui::warn_if_debug_build(ui);
+
+                let progress_bar_len = 10;
+                let progress = 0.5;
+                ui.label(format!(
+                    "Download Status: {}",
+                    (0..progress_bar_len)
+                        .map(|i| {
+                            let percent = i as f32 / progress_bar_len as f32;
+                            if percent < progress {
+                                '◼'
+                            } else {
+                                '◻'
+                            }
+                        })
+                        .collect::<String>()
+                ));
+
+                ui.spacing_mut().item_spacing.x = 0.0;
+                ui.label("powered by ");
+                ui.hyperlink_to("SmartCalc Engine", "https://github.com/erhanbaris/smartcalc");
+            });
+        });
+
+        egui::CentralPanel::default().show(ctx, |ui| {
+
+            ui.columns(2, |columns| {
+                /* Left panel */
+                let my_frame = egui::containers::Frame {
+                    margin: egui::style::Margin { left: 10., right: 5., top: 5., bottom: 5. },
+                    rounding: egui::Rounding { nw: 1.0, ne: 1.0, sw: 1.0, se: 1.0 },
+                    shadow: eframe::epaint::Shadow { extrusion: 1.0, color: egui::Color32::from_rgb(53, 62, 80) },
+                    fill: Color32::from_rgb(31, 36, 48),
+                    stroke: egui::Stroke::new(0.0, Color32::from_rgb(53, 62, 80)),
+                };
+                
+                egui::CentralPanel::default().frame(my_frame).show_inside(&mut columns[0], |ui| {
+                    ui.heading("Calculation");
+
+                    let text = ui.add(egui::TextEdit::multiline(content)
+                        .frame(false)
+                        .desired_width(f32::INFINITY)
+                        .desired_rows(10)
+                        .font(FontId::new(25.0, FontFamily::Proportional)));
+                    
+                    if text.changed() {
+                        let results = smartcalc.execute("en", &content[..]);
+                        outputs.clear();
+            
+                        for result in results.lines.iter() {
+                            match result {
+                                Some(result) => match &result.result {
+                                    Ok(line) => { outputs.push(line.output.to_string()); },
+                                    Err(_) => { outputs.push("".to_string()); }
+                                },
+                                None => { outputs.push("".to_string()); }
+                            }
+                        }
+                    }
+                });
+
+                /* Right panel */
+                let my_frame = egui::containers::Frame {
+                    margin: egui::style::Margin { left: 10., right: 5., top: 5., bottom: 5. },
+                    rounding: egui::Rounding { nw: 1.0, ne: 1.0, sw: 1.0, se: 1.0 },
+                    shadow: eframe::epaint::Shadow { extrusion: 1.0, color: egui::Color32::from_rgb(53, 62, 80) },
+                    fill: Color32::from_rgb(53, 62, 80),
+                    stroke: egui::Stroke::new(0.0, Color32::from_rgb(53, 62, 80)),
+                };
+                
+                egui::CentralPanel::default().frame(my_frame).show_inside(&mut columns[1], |ui| {
+                    ui.heading("Results");
+                    ui.add(egui::TextEdit::multiline(&mut outputs.join("\r\n"))
+                        .frame(false)
+                        .desired_width(f32::INFINITY)
+                        .interactive(false)
+                        .desired_rows(10)
+                        .text_color(egui::Color32::from_rgb(205, 255, 0))
+                        .font(FontId::new(25.0, FontFamily::Proportional)));
+                });
+            });
+        });
     }
 }
 
+#[cfg(target_arch = "wasm32")]
+use eframe::wasm_bindgen::{self, prelude::*};
+use smartcalc::SmartCalc;
+
+#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
-pub async fn create_smartcalc(decimal_seperator: String, thousand_separator: String, timezone: String, callback: Function) -> Promise {
-    future_to_promise(async move {
-        let mut smartcalc = SmartCalcWeb::default(&decimal_seperator, &thousand_separator, &timezone); 
-        match request::coin::configure(&mut smartcalc.smartcalc).await {
-            Ok(coin) => { callback.call1(&JsValue::NULL, &JsValue::from_str(&coin.name()))?; },
-            Err(_) => console::log_1(&"Error".into())
-        };
-        
-        Ok(JsValue::from(smartcalc))
-    })
-}
+pub fn start(canvas_id: &str) -> Result<(), eframe::wasm_bindgen::JsValue> {
+    console_error_panic_hook::set_once();
 
+    tracing_wasm::set_as_global_default();
 
-#[cfg(test)]
-mod tests {
-    use smartcalc::SmartCalc;
-    use wasm_bindgen_futures::JsFuture;
-    use wasm_bindgen_test::*;
-
-    use crate::create_smartcalc;
-
-    #[wasm_bindgen_test]
-    async fn state_from_dom_simple() {
-        let callback = js_sys::Function::new_with_args("","");
-        let calculator = JsFuture::from(create_smartcalc(",".to_string(), ".".to_string(), "UTC".to_string(), callback).await).await.into();
-        calculator.execute("en", r"10 coin BTC");
-        assert_eq!(1, 1);
-    }
+    let app = SmartcalcApp::default();
+    eframe::start_web(canvas_id, Box::new(app))
 }

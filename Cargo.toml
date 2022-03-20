@@ -2,7 +2,7 @@
 name = "smartcalc-app"
 version = "1.0.7"
 authors = ["Erhan BARIS <erhanbaris@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [build]
 target = "wasm32-unknown-unknown"
@@ -12,40 +12,27 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 smartcalc = { path = "../smartcalculator/smartcalc" }
-wasm-bindgen = { version = "0.2.79", features = ["serde-serialize"]}
-wasm-bindgen-futures = "0.4.24"
-console_error_panic_hook = "0.1.6"
-js-sys = "0.3.47"
-wee_alloc = "0.4.5"
-wasm-bindgen-test = "0.3.29"
-serde = { version = "1.0.130", features = ["rc", "derive"] }
-serde_json = { version = "1.0.68", default-features = false, features = ["alloc"] }
-serde_derive = "1.0.123"
+eframe = "0.17.0"
 
-[dependencies.web-sys]
-version = "0.3.56"
-features = [
-    'console',
-    'Headers',
-    'Request',
-    'RequestInit',
-    'RequestMode',
-    'Response',
-    'Window'
-]
+serde = { version = "1", features = ["derive"], optional = true }
+num-format = { version = "0.4", features = ["with-system-locale"] }
+chrono-tz = { version = "0.6.1", default-features = false }
+localzone = "0.2.0"
 
-[profile.dev]
-opt-level = 0
-debug = true
-debug-assertions = true
-overflow-checks = true
-lto = false
-panic = 'unwind'
-incremental = true
-codegen-units = 256
-rpath = false
+[dependencies.chrono]
+version = "0.4"
+default-features = false
+features = ["wasmbind", "js-sys", "clock"]
+
+[features]
+default = []
+persistence = ["eframe/persistence", "serde"] # Enable if you want to persist app state on shutdown
 
 [profile.release]
-lto = true
-opt-level = 's'
-codegen-units = 1
+opt-level = 2 # fast and small wasm
+
+[patch.crates-io]
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+console_error_panic_hook = "0.1.6"
+tracing-wasm = "0.2"
