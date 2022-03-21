@@ -35,6 +35,13 @@ npm run pack:osx
 ```
 
 ## Start web application locally
+Dependencies:
+```bash
+cargo install basic-http-server
+cargo install wasm-bindgen-cli
+cargo install wasm-pack
+cargo install wasm-gc
+```
 
 For development:
 ```bash
@@ -44,7 +51,7 @@ python -m SimpleHTTPServer
 
 For publish:
 ```bash
-wasm-pack build --out-dir src/js/ --target web --no-typescript
+wasm-pack build --out-dir docs --target web --no-typescript
 wasm-gc src/js/smartcalc_app_bg.wasm
 python -m SimpleHTTPServer
 ```
