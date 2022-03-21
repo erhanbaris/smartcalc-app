@@ -2,11 +2,14 @@ use eframe::egui;
 use eframe::{epaint::{Color32, FontId, FontFamily}, egui::RichText};
 use smartcalc::SmartCalc;
 
+use crate::calculation::Calculation;
+
 #[derive(Default)]
 pub struct CodePanel;
 
 impl CodePanel {
-    pub fn ui(&mut self, ui: &mut egui::Ui, smartcalc: &mut SmartCalc, content: &mut String, outputs: &mut Vec<String>) {
+    pub fn ui(&mut self, ui: &mut egui::Ui, calculation: &mut Calculation) {
+        let Calculation {code, outputs, smartcalc} = calculation;   
         let frame = egui::containers::Frame {
             margin: egui::style::Margin { left: 10., right: 5., top: 5., bottom: 5. },
             rounding: egui::Rounding { nw: 1.0, ne: 1.0, sw: 1.0, se: 1.0 },
@@ -18,14 +21,15 @@ impl CodePanel {
         egui::CentralPanel::default().frame(frame).show_inside(ui, |ui| {
             ui.heading(RichText::new("Calculation").color(Color32::WHITE));
 
-            let text = ui.add(egui::TextEdit::multiline(content)
+            let text = ui.add(egui::TextEdit::multiline(code)
                 .frame(false)
                 .desired_width(f32::INFINITY)
                 .desired_rows(10)
                 .font(FontId::new(25.0, FontFamily::Proportional)));
             
             if text.changed() {
-                let results = smartcalc.execute("en", &content[..]);
+                tracing::warn!("Calculate: {}", &code);
+                let results = smartcalc.execute("en", &code[..]);
                 outputs.clear();
     
                 for result in results.lines.iter() {

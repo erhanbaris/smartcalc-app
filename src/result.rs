@@ -1,11 +1,13 @@
 use eframe::egui;
 use eframe::{epaint::{Color32, FontId, FontFamily}, egui::RichText};
 
+use crate::calculation::Calculation;
+
 #[derive(Default)]
 pub struct ResultPanel;
 
 impl ResultPanel {
-    pub fn ui(&mut self, ui: &mut egui::Ui, outputs: &mut Vec<String>) {
+    pub fn ui(&mut self, ui: &mut egui::Ui, calculation: &mut Calculation) {
         let frame = egui::containers::Frame {
             margin: egui::style::Margin { left: 10., right: 5., top: 5., bottom: 5. },
             rounding: egui::Rounding { nw: 1.0, ne: 1.0, sw: 1.0, se: 1.0 },
@@ -16,7 +18,7 @@ impl ResultPanel {
         
         egui::CentralPanel::default().frame(frame).show_inside(ui, |ui| {
             ui.heading(RichText::new("Results").color(Color32::WHITE));
-            ui.add(egui::TextEdit::multiline(&mut outputs.join("\r\n"))
+            ui.add(egui::TextEdit::multiline(&mut calculation.outputs.join("\r\n"))
                 .frame(false)
                 .desired_width(f32::INFINITY)
                 .interactive(false)

@@ -2,13 +2,21 @@
 name = "smartcalc-app"
 version = "1.0.7"
 authors = ["Erhan BARIS <erhanbaris@gmail.com>"]
-edition = "2018"
+edition = "2021"
+
+[build]
+target = "wasm32-unknown-unknown"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-smartcalc = { path = "../smartcalc" }
+smartcalc = { path = "../smartcalculator/smartcalc" }
 eframe = "0.17.0"
 ehttp = "0.2"
 poll-promise = "0.1.0"
+tracing = "0.1.32"
+tracing-subscriber = "0.3.9"
 
 serde = { version = "1.0.130" }
 serde_json = { version = "1.0.68" }

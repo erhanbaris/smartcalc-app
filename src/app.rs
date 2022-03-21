@@ -8,7 +8,7 @@ use chrono::TimeZone;
 use chrono::Local;
 use chrono_tz::{Tz, OffsetName};
 
-use crate::{result::ResultPanel, http::Request};
+use crate::{result::ResultPanel, http::Request, calculation::Calculation};
 use crate::code::CodePanel;
 
 
@@ -19,11 +19,9 @@ pub struct Currency {
 }
 
 pub struct SmartcalcApp {
-    content: String,
-    outputs: Vec<String>,
+    calculation: Calculation,
     code_panel: CodePanel,
     result_panel: ResultPanel,
-    smartcalc: SmartCalc,
     fetch_currencies: Option<Request>,
 }
 
@@ -47,12 +45,10 @@ impl Default for SmartcalcApp {
         smartcalc.set_timezone(timezone).unwrap();
 
         Self {
-            content: "".to_owned(),
-            outputs: Vec::new(),
             result_panel: ResultPanel::default(),
             code_panel: CodePanel::default(),
-            smartcalc,
-            fetch_currencies: None
+            fetch_currencies: None,
+            calculation: Calculation::new()
         }
     }
 }
@@ -80,7 +76,7 @@ impl epi::App for SmartcalcApp {
     }
     
     fn update(&mut self, ctx: &egui::Context, _frame: &epi::Frame) {
-        let Self { content, outputs, result_panel, code_panel, smartcalc, fetch_currencies } = self;
+        let Self { result_panel, code_panel, calculation, fetch_currencies } = self;
 
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
@@ -94,14 +90,14 @@ impl epi::App for SmartcalcApp {
 
                 let fetch_done = match fetch_currencies {
                     Some(promise) => {
-                        println!("promise");
                         match promise.get_data() {
                             Some(response) => {
                                 match from_str::<BTreeMap<String, Currency>>(response) {
                                     Ok(data) => {
                                         for (name, currency) in data.iter() {
-                                            smartcalc.update_currency(&name, currency.rate);
+                                            calculation.smartcalc.update_currency(&name, currency.rate);
                                         }
+                                        calculation.calculate();
                                     },
                                     Err(error) => println!("JSON parse error: {:?}", error)
                                 }
@@ -135,10 +131,10 @@ impl epi::App for SmartcalcApp {
 
             ui.columns(2, |columns| {
                 /* Left panel */
-                code_panel.ui(&mut columns[0], smartcalc, content, outputs);
+                code_panel.ui(&mut columns[0], calculation);
 
                 /* Right panel */
-                result_panel.ui(&mut columns[1], outputs);
+                result_panel.ui(&mut columns[1], calculation);
             });
         });
     }
