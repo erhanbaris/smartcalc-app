@@ -7,7 +7,7 @@ use crate::calculation::Calculation;
 pub struct ResultPanel;
 
 impl ResultPanel {
-    pub fn ui(&mut self, ui: &mut egui::Ui, calculation: &mut Calculation, cursor_row: &mut usize) {
+    pub fn ui(&mut self, ui: &mut egui::Ui, calculation: &mut Calculation) {
         let frame = egui::containers::Frame {
             margin: egui::style::Margin { left: 10., right: 5., top: 5., bottom: 5. },
             rounding: egui::Rounding { nw: 1.0, ne: 1.0, sw: 1.0, se: 1.0 },

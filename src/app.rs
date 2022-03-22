@@ -22,8 +22,7 @@ pub struct SmartcalcApp {
     calculation: Calculation,
     code_panel: CodePanel,
     result_panel: ResultPanel,
-    fetch_currencies: Option<Request>,
-    cursor_row: usize
+    fetch_currencies: Option<Request>
 }
 
 impl Default for SmartcalcApp {
@@ -49,8 +48,7 @@ impl Default for SmartcalcApp {
             result_panel: ResultPanel::default(),
             code_panel: CodePanel::default(),
             fetch_currencies: None,
-            calculation: Calculation::new(),
-            cursor_row: 0
+            calculation: Calculation::new()
         }
     }
 }
@@ -81,7 +79,7 @@ impl epi::App for SmartcalcApp {
     }
     
     fn update(&mut self, ctx: &egui::Context, _frame: &epi::Frame) {
-        let Self { result_panel, code_panel, calculation, fetch_currencies, cursor_row } = self;
+        let Self { result_panel, code_panel, calculation, fetch_currencies} = self;
 
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
@@ -136,10 +134,10 @@ impl epi::App for SmartcalcApp {
 
             ui.columns(2, |columns| {
                 /* Left panel */
-                code_panel.ui(&mut columns[0], calculation, cursor_row);
+                code_panel.ui(&mut columns[0], calculation);
 
                 /* Right panel */
-                result_panel.ui(&mut columns[1], calculation, cursor_row);
+                result_panel.ui(&mut columns[1], calculation);
             });
         });
     }

@@ -4,12 +4,6 @@ version = "1.0.7"
 authors = ["Erhan BARIS <erhanbaris@gmail.com>"]
 edition = "2021"
 
-[build]
-target = "wasm32-unknown-unknown"
-
-[lib]
-crate-type = ["cdylib", "rlib"]
-
 [dependencies]
 smartcalc = { path = "../smartcalculator/smartcalc" }
 eframe = "0.17.0"
