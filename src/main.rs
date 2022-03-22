@@ -4,6 +4,7 @@ mod app;
 mod result;
 mod code;
 mod calculation;
+mod highlighter;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn main() {

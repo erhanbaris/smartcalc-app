@@ -1,14 +1,18 @@
 use eframe::egui;
 use eframe::{epaint::{Color32, FontId, FontFamily}, egui::RichText};
-use smartcalc::SmartCalc;
 
 use crate::calculation::Calculation;
+use crate::highlighter::MemoizedHighlighter;
 
 #[derive(Default)]
-pub struct CodePanel;
+pub struct CodePanel {
+    highlighter: MemoizedHighlighter
+}
 
 impl CodePanel {
-    pub fn ui(&mut self, ui: &mut egui::Ui, calculation: &mut Calculation) {
+    pub fn ui(&mut self, ui: &mut egui::Ui, calculation: &mut Calculation, cursor_row: &mut usize) {
+        let Self { highlighter } = self;
+
         let Calculation {code, outputs, smartcalc} = calculation;   
         let frame = egui::containers::Frame {
             margin: egui::style::Margin { left: 10., right: 5., top: 5., bottom: 5. },
@@ -21,13 +25,34 @@ impl CodePanel {
         egui::CentralPanel::default().frame(frame).show_inside(ui, |ui| {
             ui.heading(RichText::new("Calculation").color(Color32::WHITE));
 
-            let text = ui.add(egui::TextEdit::multiline(code)
+            let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
+                let mut layout_job = highlighter.highlight(ui.style(), string, *cursor_row);
+                layout_job.wrap_width = wrap_width;
+                ui.fonts().layout_job(layout_job)
+            };
+            
+            let text = egui::TextEdit::multiline(code)
                 .frame(false)
                 .desired_width(f32::INFINITY)
                 .desired_rows(10)
-                .font(FontId::new(25.0, FontFamily::Proportional)));
-            
-            if text.changed() {
+                .font(FontId::new(20.0, FontFamily::Proportional))
+                .layouter(&mut layouter)
+                .show(ui);
+
+            let mut recalculate = false;
+            if let Some(text_cursor_range) = text.cursor_range {
+                let cursor = text_cursor_range.sorted_cursors();
+                if *cursor_row != cursor[0].rcursor.row {
+                    *cursor_row = cursor[0].rcursor.row;
+                    recalculate = true;
+                }
+            }
+
+            if text.response.changed() {
+                recalculate = true;
+            }
+
+            if recalculate {
                 tracing::warn!("Calculate: {}", &code);
                 let results = smartcalc.execute("en", &code[..]);
                 outputs.clear();
