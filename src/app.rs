@@ -88,7 +88,7 @@ impl epi::App for SmartcalcApp {
                     .ui(ui);
 
                 if update_currencies.clicked() && fetch_currencies.is_none() {
-                    *fetch_currencies = Some(Request::get("http://www.floatrates.com/daily/usd.json", &ctx));
+                    *fetch_currencies = Some(Request::get("http://www.floatrates.com/daily/usd.json", ctx));
                 }
 
                 let fetch_done = match fetch_currencies {
@@ -98,7 +98,7 @@ impl epi::App for SmartcalcApp {
                                 match from_str::<BTreeMap<String, Currency>>(response) {
                                     Ok(data) => {
                                         for (name, currency) in data.iter() {
-                                            calculation.smartcalc.update_currency(&name, currency.rate);
+                                            calculation.smartcalc.update_currency(name, currency.rate);
                                         }
                                         calculation.calculate();
                                     },

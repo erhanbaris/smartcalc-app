@@ -29,7 +29,9 @@ impl Calculation {
         smartcalc.set_timezone(timezone).unwrap();
 
         Self {
-            code: String::new(),
+            code: "data = 1
+data * 2
+1024 dkk".to_string(),
             outputs: Vec::new(),
             smartcalc
         }

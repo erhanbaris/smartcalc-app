@@ -5,7 +5,7 @@ authors = ["Erhan BARIS <erhanbaris@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-smartcalc = { path = "../smartcalculator/smartcalc" }
+smartcalc = { path = "../smartcalc" }
 eframe = "0.17.0"
 ehttp = "0.2"
 poll-promise = "0.1.0"
