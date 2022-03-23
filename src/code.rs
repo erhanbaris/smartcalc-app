@@ -1,7 +1,8 @@
-use eframe::egui;
+use eframe::egui::{self, ScrollArea};
 use eframe::{epaint::{Color32, FontId, FontFamily}, egui::RichText};
 use smartcalc::SmartCalc;
 
+use crate::app::State;
 use crate::calculation::Calculation;
 use crate::highlighter::MemoizedHighlighter;
 
@@ -12,12 +13,11 @@ pub struct CodePanel {
 
 impl CodePanel {
     fn calculate_and_format(&mut self, code: &str, outputs: &mut Vec<String>, smartcalc: &SmartCalc) -> egui::text::LayoutJob {
-        let Self { highlighter } = self;
+        let Self { highlighter, .. } = self;
         let mut ui_tokens = Vec::new();
 
         if highlighter.is_dirty(code) {
 
-            tracing::warn!("Calculate: {}", &code);
             let results = smartcalc.execute("en", code);
             outputs.clear();
 
@@ -39,7 +39,7 @@ impl CodePanel {
         highlighter.highlight(code, &ui_tokens)
     }
 
-    pub fn ui(&mut self, ui: &mut egui::Ui, calculation: &mut Calculation) {
+    pub fn ui(&mut self, ui: &mut egui::Ui, calculation: &mut Calculation, state: &mut State) {
         let Calculation {code, outputs, smartcalc} = calculation;
 
         let frame = egui::containers::Frame {
@@ -52,19 +52,29 @@ impl CodePanel {
         
         egui::CentralPanel::default().frame(frame).show_inside(ui, |ui| {
             ui.heading(RichText::new("Calculation").color(Color32::WHITE));
+            ui.separator();
             let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
                 let mut layout_job = self.calculate_and_format(string, outputs, smartcalc);
                 layout_job.wrap_width = wrap_width;
                 ui.fonts().layout_job(layout_job)
             };
+
+            let output = ScrollArea::vertical()
+                .id_source("source")
+                .show(ui, |ui| {
+                    egui::TextEdit::multiline(code)
+                        .frame(false)
+                        .desired_width(f32::INFINITY)
+                        .desired_rows(10)
+                        .font(FontId::new(35.0, FontFamily::Name("TitilliumWeb".into())))
+                        .layouter(&mut layouter)
+                        .show(ui)
+            });
             
-            egui::TextEdit::multiline(code)
-                .frame(false)
-                .desired_width(f32::INFINITY)
-                .desired_rows(10)
-                .font(FontId::new(20.0, FontFamily::Proportional))
-                .layouter(&mut layouter)
-                .show(ui);
+            if output.state.offset != state.scroll {
+                state.scroll = output.state.offset;
+                state.scroll_height = output.inner_rect.height();
+            }
         });
     }
 }

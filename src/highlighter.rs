@@ -47,8 +47,6 @@ impl MemoizedHighlighter {
         }
 
         self.consume_whitespaces(text, last_position, &mut job);
-
-        tracing::warn!("{}", text.replace("\r\n", "\\r\\n\r\n").replace("\n", "\\n\n"));
         job
     }
 
@@ -73,7 +71,7 @@ impl MemoizedHighlighter {
             None => (Color32::from_rgb(139, 148, 158), Color32::TRANSPARENT)
         };
 
-        let font_id = FontId::new(25.0, FontFamily::Proportional);
+        let font_id = FontId::new(35.0, FontFamily::Name("TitilliumWeb".into()));
         let underline = Stroke::none();
         let strikethrough = Stroke::none();
         let valign = Align::TOP;

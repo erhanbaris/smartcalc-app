@@ -38,7 +38,6 @@ data * 2
     }
 
     pub fn calculate(&mut self) {
-        tracing::warn!("Calculate: {}", &self.code);
         let results = self.smartcalc.execute("en", &self.code[..]);
         self.outputs.clear();
 

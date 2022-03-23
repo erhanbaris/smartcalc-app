@@ -4,6 +4,9 @@ version = "1.0.7"
 authors = ["Erhan BARIS <erhanbaris@gmail.com>"]
 edition = "2021"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [dependencies]
 smartcalc = { path = "../smartcalc" }
 eframe = "0.17.0"
