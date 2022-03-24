@@ -3,6 +3,7 @@ use eframe::{epaint::{Color32, FontId, FontFamily}, egui::RichText};
 
 use crate::app::State;
 use crate::calculation::Calculation;
+use crate::scroll::ScrollArea;
 
 #[derive(Default)]
 pub struct ResultPanel;
@@ -20,16 +21,22 @@ impl ResultPanel {
         egui::CentralPanel::default().frame(frame).show_inside(ui, |ui| {
             ui.heading(RichText::new("Results").color(Color32::WHITE));
             ui.separator();
-            let mut layout = Layout::right_to_left();
-            layout = layout.with_cross_align(egui::Align::Min);
 
-            for output in calculation.outputs.iter() {
-                ui.with_layout(layout, |ui| { 
-                    ui.label(RichText::new(output)
-                        .color(egui::Color32::from_rgb(205, 255, 0))
-                        .font(FontId::new(32.46, FontFamily::Name("Quicksand".into()))));
+            ScrollArea::vertical()
+                .id_source("target")
+                .vertical_scroll_offset(state.scroll[1])
+                .show(ui, |ui| {
+                    let mut layout = Layout::right_to_left();
+                    layout = layout.with_cross_align(egui::Align::Min);
+        
+                    for output in calculation.outputs.iter() {
+                        ui.with_layout(layout, |ui| { 
+                            ui.label(RichText::new(output)
+                                .color(egui::Color32::from_rgb(205, 255, 0))
+                                .font(FontId::new(32., FontFamily::Name("Quicksand".into()))));
+                        });
+                    }
                 });
-            }
         });
     }
 }

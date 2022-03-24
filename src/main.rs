@@ -5,6 +5,7 @@ mod result;
 mod code;
 mod calculation;
 mod highlighter;
+mod scroll;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn main() {

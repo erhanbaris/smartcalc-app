@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap};
 
-use eframe::{egui::{self, FontDefinitions, FontData, Button, Widget, RichText, Visuals, ScrollArea}, epi, epaint::{Color32, FontFamily, Vec2}};
+use eframe::{egui::{self, FontDefinitions, FontData, Button, Widget, RichText, Visuals}, epi, epaint::{Color32, FontFamily, Vec2}};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::from_str;
 use smartcalc::SmartCalc;
@@ -89,6 +89,12 @@ impl epi::App for SmartcalcApp {
 
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
+                let settings = Button::new(RichText::new("⚙ Settings")).ui(ui);
+
+                if settings.clicked() {
+                    *fetch_currencies = Some(Request::get("http://www.floatrates.com/daily/usd.json", ctx));
+                }
+                    
                 let update_currencies = Button::new(RichText::new("🔄 Update Currencies").color(Color32::WHITE))
                     .fill(Color32::from_rgb(33, 133, 208))
                     .ui(ui);
@@ -140,10 +146,10 @@ impl epi::App for SmartcalcApp {
 
             ui.columns(2, |columns| {
                 /* Left panel */
-                code_panel.ui(&mut columns[0], calculation, state);
+                result_panel.ui(&mut columns[0], calculation, state);
 
                 /* Right panel */
-                result_panel.ui(&mut columns[1], calculation, state);
+                code_panel.ui(&mut columns[1], calculation, state);
             });
         });
     }
