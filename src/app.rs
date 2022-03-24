@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap};
 
-use eframe::{egui::{self, FontDefinitions, FontData, Button, Widget, RichText, Visuals}, epi, epaint::{Color32, FontFamily, Vec2}};
+use eframe::{egui::{self, FontDefinitions, FontData, Button, Widget, RichText, Visuals, ScrollArea}, epi, epaint::{Color32, FontFamily, Vec2}};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::from_str;
 use smartcalc::SmartCalc;
@@ -73,10 +73,8 @@ impl epi::App for SmartcalcApp {
         }
 
         let mut font = FontDefinitions::default();
-        font.font_data.insert("TitilliumWeb".to_owned(),FontData::from_static(include_bytes!("../fonts/TitilliumWeb-Regular.ttf")));
-        font.font_data.insert("TitilliumWebBold".to_owned(),FontData::from_static(include_bytes!("../fonts/TitilliumWeb-Bold.ttf")));
-        font.families.insert(FontFamily::Name("TitilliumWeb".into()), vec!["TitilliumWeb".to_owned(), "Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned(), "emoji-icon-font".to_owned()]);
-        font.families.insert(FontFamily::Name("TitilliumWebBold".into()), vec!["TitilliumWebBold".to_owned()]);
+        font.font_data.insert("Quicksand".to_owned(),FontData::from_static(include_bytes!("../fonts/Quicksand-Regular.ttf")));
+        font.families.insert(FontFamily::Name("Quicksand".into()), vec!["Quicksand".to_owned(), "Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned(), "emoji-icon-font".to_owned()]);
         ctx.set_fonts(font);
         ctx.set_visuals(Visuals::dark());
     }

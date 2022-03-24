@@ -1,4 +1,4 @@
-use eframe::egui::{self, ScrollArea};
+use eframe::egui::{self, Layout};
 use eframe::{epaint::{Color32, FontId, FontFamily}, egui::RichText};
 
 use crate::app::State;
@@ -20,20 +20,16 @@ impl ResultPanel {
         egui::CentralPanel::default().frame(frame).show_inside(ui, |ui| {
             ui.heading(RichText::new("Results").color(Color32::WHITE));
             ui.separator();
-            ScrollArea::vertical()
-                .vscroll(false)
-                .id_source("target")
-                .vertical_scroll_offset(state.scroll[1])
-                .enable_scrolling(false)
-                .show(ui, |ui| {
-                    ui.add(egui::TextEdit::multiline(&mut calculation.outputs.join("\r\n"))
-                        .frame(false)
-                        .desired_width(f32::INFINITY)
-                        .interactive(false)
-                        .desired_rows(10)
-                        .text_color(egui::Color32::from_rgb(205, 255, 0))
-                        .font(FontId::new(35.0, FontFamily::Name("TitilliumWeb".into()))))
-                    });
+            let mut layout = Layout::right_to_left();
+            layout = layout.with_cross_align(egui::Align::Min);
+
+            for output in calculation.outputs.iter() {
+                ui.with_layout(layout, |ui| { 
+                    ui.label(RichText::new(output)
+                        .color(egui::Color32::from_rgb(205, 255, 0))
+                        .font(FontId::new(32.46, FontFamily::Name("Quicksand".into()))));
+                });
+            }
         });
     }
 }

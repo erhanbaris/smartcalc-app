@@ -66,7 +66,7 @@ impl CodePanel {
                         .frame(false)
                         .desired_width(f32::INFINITY)
                         .desired_rows(10)
-                        .font(FontId::new(35.0, FontFamily::Name("TitilliumWeb".into())))
+                        .font(FontId::new(35.0, FontFamily::Name("Quicksand".into())))
                         .layouter(&mut layouter)
                         .show(ui)
             });
