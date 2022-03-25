@@ -62,18 +62,16 @@ impl CodePanel {
             let output = ScrollArea::vertical()
                 .id_source("source")
                 .show(ui, |ui| {
-                    egui::TextEdit::multiline(code)
+                    state.cursor = egui::TextEdit::multiline(code)
                         .frame(false)
                         .desired_width(f32::INFINITY)
-                        .desired_rows(10)
                         .font(FontId::new(35.0, FontFamily::Name("Quicksand".into())))
                         .layouter(&mut layouter)
-                        .show(ui)
+                        .show(ui).cursor_range;
             });
             
             if output.state.offset != state.scroll {
                 state.scroll = output.state.offset;
-                state.scroll_height = output.inner_rect.height();
             }
         });
     }

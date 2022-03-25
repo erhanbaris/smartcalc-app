@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap};
 
-use eframe::{egui::{self, FontDefinitions, FontData, Button, Widget, RichText, Visuals}, epi, epaint::{Color32, FontFamily, Vec2}};
+use eframe::{egui::{self, FontDefinitions, FontData, Button, Widget, RichText, Visuals, text_edit::CursorRange}, epi, epaint::{Color32, FontFamily, Vec2}};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::from_str;
 use smartcalc::SmartCalc;
@@ -21,7 +21,7 @@ pub struct Currency {
 #[derive(Default)]
 pub struct State {
     pub scroll: Vec2,
-    pub scroll_height: f32
+    pub cursor: Option<CursorRange>
 }
 
 pub struct SmartcalcApp {

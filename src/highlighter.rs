@@ -53,26 +53,25 @@ impl MemoizedHighlighter {
     fn format_from_style(&self, token: Option<&UiToken>) -> egui::text::TextFormat {
         use egui::{Align, Color32, Stroke};
 
-        let (color, background) = match token {
+        let (color, background, underline) = match token {
             Some(token) => {
                 match token.ui_type {
-                    UiTokenType::Text => (Color32::from_rgb(139, 148, 158), Color32::TRANSPARENT),
-                    UiTokenType::Number => (Color32::from_rgb(121, 192, 255), Color32::TRANSPARENT),
-                    UiTokenType::Symbol1 => (Color32::from_rgb(255, 123, 114), Color32::TRANSPARENT),
-                    UiTokenType::Symbol2 => (Color32::from_rgb(255, 123, 114), Color32::TRANSPARENT),
-                    UiTokenType::DateTime => (Color32::from_rgb(139, 148, 158), Color32::TRANSPARENT),
-                    UiTokenType::Operator => (Color32::from_rgb(208, 168, 105), Color32::TRANSPARENT),
-                    UiTokenType::Comment => (Color32::from_rgb(111, 66, 193), Color32::TRANSPARENT),
-                    UiTokenType::VariableDefination => (Color32::BLACK, Color32::WHITE),
-                    UiTokenType::VariableUse => (Color32::WHITE, Color32::TRANSPARENT),
-                    UiTokenType::Month => (Color32::from_rgb(139, 148, 158), Color32::TRANSPARENT),
+                    UiTokenType::Text => (Color32::from_rgb(139, 148, 158), Color32::TRANSPARENT, Stroke::none()),
+                    UiTokenType::Number => (Color32::from_rgb(121, 192, 255), Color32::TRANSPARENT, Stroke::none()),
+                    UiTokenType::Symbol1 => (Color32::from_rgb(255, 123, 114), Color32::TRANSPARENT, Stroke::none()),
+                    UiTokenType::Symbol2 => (Color32::from_rgb(255, 123, 114), Color32::TRANSPARENT, Stroke::none()),
+                    UiTokenType::DateTime => (Color32::from_rgb(139, 148, 158), Color32::TRANSPARENT, Stroke::none()),
+                    UiTokenType::Operator => (Color32::from_rgb(208, 168, 105), Color32::TRANSPARENT, Stroke::none()),
+                    UiTokenType::Comment => (Color32::from_rgb(111, 66, 193), Color32::TRANSPARENT, Stroke::none()),
+                    UiTokenType::VariableDefination => (Color32::WHITE, Color32::TRANSPARENT, Stroke::new(1.0, Color32::WHITE)),
+                    UiTokenType::VariableUse => (Color32::WHITE, Color32::TRANSPARENT, Stroke::none()),
+                    UiTokenType::Month => (Color32::from_rgb(139, 148, 158), Color32::TRANSPARENT, Stroke::none()),
                 }
             },
-            None => (Color32::from_rgb(139, 148, 158), Color32::TRANSPARENT)
+            None => (Color32::from_rgb(139, 148, 158), Color32::TRANSPARENT, Stroke::none())
         };
 
         let font_id = FontId::new(35.0, FontFamily::Name("Quicksand".into()));
-        let underline = Stroke::none();
         let strikethrough = Stroke::none();
         let valign = Align::TOP;
 

@@ -5,6 +5,7 @@ mod code;
 mod calculation;
 mod highlighter;
 mod scroll;
+mod config;
 
 #[cfg(target_arch = "wasm32")]
 use eframe::wasm_bindgen::{self, prelude::*};
