@@ -13,6 +13,7 @@ impl Request {
         let request = ehttp::Request::get(url);
         
         ehttp::fetch(request, move |response: ehttp::Result<ehttp::Response>| {
+            println!("Http received");
             ctx.request_repaint();
             let response = match response {
                 Ok(response) => match response.text() {
@@ -27,9 +28,9 @@ impl Request {
                     "".to_string()
                 }
             };
-
             sender.send(response);
         });
+        println!("Http created");
 
         Self { promise }
     }

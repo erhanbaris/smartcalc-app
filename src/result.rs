@@ -1,4 +1,4 @@
-use eframe::egui::{self, Layout, Label, Widget, WidgetInfo, WidgetType};
+use eframe::egui::{self, Layout, Label, WidgetInfo, WidgetType};
 use eframe::epaint::{Vec2, Rounding, Stroke, TextShape};
 use eframe::{epaint::{Color32, FontId, FontFamily}, egui::RichText};
 
@@ -65,8 +65,7 @@ impl ResultPanel {
             let mut layout = Layout::right_to_left();
             layout = layout.with_cross_align(egui::Align::Min);
 
-            ui.with_layout(layout, |ui| { ui.heading(RichText::new("Results").color(Color32::WHITE)) });
-            ui.separator();
+            ui.with_layout(layout, |ui| { ui.heading(RichText::new("Result").color(Color32::WHITE)) });
 
             ScrollArea::vertical()
                 .id_source("target")

@@ -7,6 +7,8 @@ mod calculation;
 mod highlighter;
 mod scroll;
 mod config;
+mod toggle_switch;
+mod query;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn main() {

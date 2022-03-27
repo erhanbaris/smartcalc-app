@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap};
 
-use eframe::{egui::{self, FontDefinitions, FontData, Button, Widget, RichText, Visuals, text_edit::CursorRange}, epi, epaint::{Color32, FontFamily, Vec2}};
+use eframe::{egui::{self, FontDefinitions, FontData, Button, Widget, RichText, Visuals, text_edit::CursorRange, CollapsingHeader}, epi, epaint::{Color32, FontFamily, Vec2}};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::from_str;
 use smartcalc::SmartCalc;
@@ -8,7 +8,7 @@ use chrono::TimeZone;
 use chrono::Local;
 use chrono_tz::{Tz, OffsetName};
 
-use crate::{result::ResultPanel, http::Request, calculation::Calculation};
+use crate::{result::ResultPanel, http::Request, calculation::Calculation, toggle_switch::toggle, query::PluginManager};
 use crate::code::CodePanel;
 
 
@@ -21,7 +21,8 @@ pub struct Currency {
 #[derive(Default)]
 pub struct State {
     pub scroll: Vec2,
-    pub cursor: Option<CursorRange>
+    pub cursor: Option<CursorRange>,
+    pub show_settings: bool
 }
 
 pub struct SmartcalcApp {
@@ -29,7 +30,8 @@ pub struct SmartcalcApp {
     code_panel: CodePanel,
     result_panel: ResultPanel,
     fetch_currencies: Option<Request>,
-    state: State
+    state: State,
+    plugins: PluginManager
 }
 
 impl Default for SmartcalcApp {
@@ -56,7 +58,8 @@ impl Default for SmartcalcApp {
             code_panel: CodePanel::default(),
             fetch_currencies: None,
             calculation: Calculation::new(),
-            state: State::default()
+            state: State::default(),
+            plugins: PluginManager::default()
         }
     }
 }
@@ -67,6 +70,8 @@ impl epi::App for SmartcalcApp {
     }
 
     fn setup(&mut self, ctx: &egui::Context, _frame: &epi::Frame, _storage: Option<&dyn epi::Storage>) {
+        let Self { result_panel, code_panel, calculation, fetch_currencies, state, plugins} = self;
+
         #[cfg(feature = "persistence")]
         if let Some(storage) = _storage {
             *self = epi::get_value(storage, epi::APP_KEY).unwrap_or_default()
@@ -77,6 +82,9 @@ impl epi::App for SmartcalcApp {
         font.families.insert(FontFamily::Name("Quicksand".into()), vec!["Quicksand".to_owned(), "Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned(), "emoji-icon-font".to_owned()]);
         ctx.set_fonts(font);
         ctx.set_visuals(Visuals::dark());
+
+        *fetch_currencies = Some(Request::get("https://www.floatrates.com/daily/usd.json", ctx));
+        plugins.build(&mut calculation.smartcalc, ctx);
     }
 
     #[cfg(feature = "persistence")]
@@ -85,14 +93,25 @@ impl epi::App for SmartcalcApp {
     }
     
     fn update(&mut self, ctx: &egui::Context, _frame: &epi::Frame) {
-        let Self { result_panel, code_panel, calculation, fetch_currencies, state} = self;
+        let Self { result_panel, code_panel, calculation, fetch_currencies, state, plugins} = self;
+        
+        egui::Window::new("⚙ Settings").collapsible(false).open(&mut state.show_settings).resizable(false).show(ctx, |ui| {
+            let mut my_bool = true;
 
+            CollapsingHeader::new("Widgets")
+                .default_open(true)
+                .show(ui, |ui| {
+                    ui.label("Hello World!");
+                    ui.add(toggle(&mut my_bool));
+            });
+        });
+        
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
                 let settings = Button::new(RichText::new("⚙ Settings")).ui(ui);
 
                 if settings.clicked() {
-                    *fetch_currencies = Some(Request::get("http://www.floatrates.com/daily/usd.json", ctx));
+                    state.show_settings = true;
                 }
                     
                 let update_currencies = Button::new(RichText::new("🔄 Update Currencies").color(Color32::WHITE))
@@ -100,8 +119,10 @@ impl epi::App for SmartcalcApp {
                     .ui(ui);
 
                 if update_currencies.clicked() && fetch_currencies.is_none() {
-                    *fetch_currencies = Some(Request::get("http://www.floatrates.com/daily/usd.json", ctx));
+                    *fetch_currencies = Some(Request::get("https://www.floatrates.com/daily/usd.json", ctx));
                 }
+
+                plugins.process(&mut calculation.smartcalc);
 
                 let fetch_done = match fetch_currencies {
                     Some(promise) => {

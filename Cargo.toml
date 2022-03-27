@@ -8,7 +8,7 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-smartcalc = { path = "../smartcalc" }
+smartcalc = { path = "../smartcalculator/smartcalc" }
 eframe = "0.17.0"
 ehttp = "0.2"
 poll-promise = "0.1.0"

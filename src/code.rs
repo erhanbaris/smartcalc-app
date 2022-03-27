@@ -52,7 +52,6 @@ impl CodePanel {
         
         egui::CentralPanel::default().frame(frame).show_inside(ui, |ui| {
             ui.heading(RichText::new("Calculation").color(Color32::WHITE));
-            ui.separator();
             let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
                 let mut layout_job = self.calculate_and_format(string, outputs, smartcalc);
                 layout_job.wrap_width = wrap_width;
