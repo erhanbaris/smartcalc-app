@@ -1,5 +1,4 @@
 use std::any::Any;
-use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::rc::Rc;
 
@@ -18,6 +17,7 @@ use super::PluginStatus;
 use super::PluginTrait;
 
 use super::PluginError;
+use super::RequestManager;
 use super::get_number;
 use super::get_text;
 
@@ -52,7 +52,8 @@ pub struct CoinItem {
 pub struct CoinPlugin {
     coins: Vec<CoinItem>,
     request: Option<Request>,
-    status: PluginStatus
+    status: PluginStatus,
+    requests: Rc<RequestManager>
 }
 
 impl CoinPlugin {
@@ -70,7 +71,7 @@ impl PluginTrait for CoinPlugin {
     fn get_rules(&self) -> Vec<String> { Vec::new() }
     fn upcast(self: Rc<Self>) -> Rc<dyn RuleTrait> { self }
 
-    fn init(_: &mut SmartCalc, ctx: &Context) -> Result<Rc<Self>, PluginError> {
+    fn init(_: &mut SmartCalc, ctx: &Context, _: Rc<RequestManager>) -> Result<Rc<Self>, PluginError> {
         let mut coin = Self::default();
         coin.update(ctx)?;
         Ok(Rc::new(coin))

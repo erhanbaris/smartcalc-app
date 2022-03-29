@@ -1,5 +1,6 @@
 use std::any::Any;
-use std::cell::{RefCell, Cell};
+use std::borrow::{BorrowMut, Borrow};
+use std::cell::{Cell, RefCell};
 use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::ops::Deref;
@@ -59,7 +60,7 @@ impl Plugin {
     }
 
     pub fn disable(&self, smartcalc: &mut SmartCalc) {
-        smartcalc.delete_rule("en".to_string(), self.name());
+        //smartcalc.delete_rule("en".to_string(), self.name());
     }
 
     pub fn process(&mut self) {
@@ -100,7 +101,7 @@ pub trait PluginTrait: RuleTrait {
     fn get_rules(&self) -> Vec<String>;
     fn http_result(&self, content: &str) -> Rc<dyn Any>;
     
-    fn init(smartcalc: &mut SmartCalc, ctx: &Context) -> Result<Rc<Self>, PluginError> where Self: Sized;
+    fn init(smartcalc: &mut SmartCalc, ctx: &Context, requests: Rc<RequestManager>) -> Result<Rc<Self>, PluginError> where Self: Sized;
     fn update(&mut self, ctx: &Context) -> Result<(), PluginError>;
     fn process(&mut self);
     fn status(&self) -> PluginStatus;
@@ -108,14 +109,26 @@ pub trait PluginTrait: RuleTrait {
 }
 
 #[derive(Default)]
+pub struct RequestManager {
+    pub requests: RefCell<Vec<(String, Request)>>
+}
+
+impl RequestManager {
+    pub fn add(&self, plugin_name: &String, request: Request) {
+        self.requests.borrow_mut().push((plugin_name.to_string(), request));
+    }
+}
+
+#[derive(Default)]
 pub struct PluginManager {
     plugins: Vec<Rc<dyn PluginTrait>>,
-    plugins2: Vec<Plugin>
+    plugins2: Vec<Plugin>,
+    requests: Rc<RequestManager>
 }
 
 impl PluginManager {
     fn add_plugin<T: 'static + PluginTrait>(&mut self, smartcalc: &mut SmartCalc, ctx: &Context) {
-        match T::init(smartcalc, ctx) {
+        match T::init(smartcalc, ctx, self.requests.clone()) {
             Ok(plugin) => {
                 tracing::info!("Plugin added: {}", plugin.name());
                 self.plugins2.push(Plugin::new(plugin.clone()));

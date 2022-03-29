@@ -156,6 +156,7 @@ impl epi::App for SmartcalcApp {
 
         egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
             ui.horizontal(|ui| {
+                println!("Item is none");
                 egui::warn_if_debug_build(ui);
                 ui.spacing_mut().item_spacing.x = 0.0;
                 ui.label("powered by ");
