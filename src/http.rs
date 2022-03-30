@@ -3,11 +3,20 @@ use poll_promise::Promise;
 use eframe::egui;
 
 pub struct Request {
-    promise: Promise<String>
+    promise: Promise<String>,
+    pub extra: Option<String>
 }
 
 impl Request {
+    pub fn get_with_extra(url: &str, ctx: &egui::Context, extra: String) -> Self {
+        Request::inner_get(url, ctx, Some(extra))
+    }
+
     pub fn get(url: &str, ctx: &egui::Context) -> Self {
+        Request::inner_get(url, ctx, None)
+    }
+
+    fn inner_get(url: &str, ctx: &egui::Context, extra: Option<String>) -> Self {
         let ctx = ctx.clone();
         let (sender, promise) = Promise::new();
         let request = ehttp::Request::get(url);
@@ -32,7 +41,7 @@ impl Request {
         });
         println!("Http created");
 
-        Self { promise }
+        Self { promise, extra }
     }
 
     pub fn get_data(&self) -> Option<&String> {

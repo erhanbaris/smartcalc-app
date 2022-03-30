@@ -1,6 +1,4 @@
-use std::any::Any;
-use std::borrow::{BorrowMut, Borrow};
-use std::cell::{Cell, RefCell};
+use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::ops::Deref;
@@ -39,16 +37,13 @@ pub fn get_text(field_name: &str, fields: &BTreeMap<String, TokenType>) -> Optio
     }
 }
 
-
 pub struct Plugin {
-    data: Cell<Rc<dyn Any>>,
-    request: Option<Request>,
-    plugin: Rc<dyn PluginTrait>
+    pub plugin: Rc<dyn PluginTrait>
 }
 
 impl Plugin {
     pub fn new(plugin: Rc<dyn PluginTrait>) -> Self {
-        Self { request: None, plugin, data: Cell::new(Rc::new(false)) }
+        Self { plugin }
     }
 
     pub fn name(&self) -> String {
@@ -62,34 +57,6 @@ impl Plugin {
     pub fn disable(&self, smartcalc: &mut SmartCalc) {
         //smartcalc.delete_rule("en".to_string(), self.name());
     }
-
-    pub fn process(&mut self) {
-        //let a : Rc<RefCell<String>> = Rc::new(RefCell::new(String::new()));
-        match &self.request {
-            Some(promise) => {
-                println!("get_data");
-                match promise.get_data() {
-                    Some(response) => {
-                        self.data.set(self.plugin.http_result(response));
-                    },
-                    None => ()
-                }
-            },
-            None => ()
-        };
-    }
-}
-
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum PluginStatus {
-    Idle,
-    Loading,
-    ReadyToProcess,
-    Done
-}
-
-impl Default for PluginStatus {
-    fn default() -> Self { PluginStatus::Idle }
 }
 
 #[derive(Debug)]
@@ -99,12 +66,9 @@ pub enum PluginError {
 
 pub trait PluginTrait: RuleTrait {
     fn get_rules(&self) -> Vec<String>;
-    fn http_result(&self, content: &str) -> Rc<dyn Any>;
+    fn http_result(&self, content: &str, request: Option<String>);
     
     fn init(smartcalc: &mut SmartCalc, ctx: &Context, requests: Rc<RequestManager>) -> Result<Rc<Self>, PluginError> where Self: Sized;
-    fn update(&mut self, ctx: &Context) -> Result<(), PluginError>;
-    fn process(&mut self);
-    fn status(&self) -> PluginStatus;
     fn upcast(self: Rc<Self>) -> Rc<dyn RuleTrait>;
 }
 
@@ -143,28 +107,34 @@ impl PluginManager {
     pub fn build(&mut self, smartcalc: &mut SmartCalc, ctx: &Context) {
         self.add_plugin::<coin::CoinPlugin>(smartcalc, ctx);
         self.add_plugin::<weather::WeatherPlugin>(smartcalc, ctx);
+
+
+        for plugin in self.plugins2.iter() {
+            plugin.enable(smartcalc);
+        }
     }
     
-    pub fn process(&mut self, calculator: &mut SmartCalc) {
-        for plugin in self.plugins2.iter() {
-            plugin.enable(calculator);
+    pub fn process(&mut self, ctx: &Context, smartcalc: &mut SmartCalc) {
+        let mut finished_requests = Vec::new();
+        let mut requests = self.requests.requests.borrow_mut();
+        //self.requests.requests.borrow_mut().retain(|_, request| request.get_data().is_some());
+        for (index, (plugin_name, request)) in requests.iter().enumerate() {
+            match request.get_data() {
+                Some(response) => {
+                    match self.plugins2.iter().find(|plugin| plugin.name() == &plugin_name[..]) {
+                        Some(plugin) => {
+                            finished_requests.push(index);
+                            plugin.plugin.http_result(response, request.extra.clone());
+                        },
+                        _ => ()
+                    }
+                },
+                None => ()
+            }
         }
 
-        for plugin in self.plugins.iter_mut() {
-            if plugin.status() == PluginStatus::Loading {
-                match Rc::get_mut(plugin) {
-                    Some(object) => {
-                        println!("process >>");
-                        object.process();
-                        if object.status() == PluginStatus::ReadyToProcess {
-                            //plugin.enable(PluginTrait::upcast(plugin.clone()), calculator);
-                        }
-                    },
-                    None => {
-                        println!("Item is none")
-                    }
-                }
-            }
+        for index in finished_requests.iter() {
+            requests.remove(*index);
         }
     }
 }

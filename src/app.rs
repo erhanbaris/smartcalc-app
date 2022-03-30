@@ -94,7 +94,8 @@ impl epi::App for SmartcalcApp {
     
     fn update(&mut self, ctx: &egui::Context, _frame: &epi::Frame) {
         let Self { result_panel, code_panel, calculation, fetch_currencies, state, plugins} = self;
-        
+        plugins.process(ctx, &mut calculation.smartcalc);
+
         egui::Window::new("⚙ Settings").collapsible(false).open(&mut state.show_settings).resizable(false).show(ctx, |ui| {
             let mut my_bool = true;
 
@@ -121,8 +122,6 @@ impl epi::App for SmartcalcApp {
                 if update_currencies.clicked() && fetch_currencies.is_none() {
                     *fetch_currencies = Some(Request::get("https://www.floatrates.com/daily/usd.json", ctx));
                 }
-
-                plugins.process(&mut calculation.smartcalc);
 
                 let fetch_done = match fetch_currencies {
                     Some(promise) => {
@@ -156,7 +155,6 @@ impl epi::App for SmartcalcApp {
 
         egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
             ui.horizontal(|ui| {
-                println!("Item is none");
                 egui::warn_if_debug_build(ui);
                 ui.spacing_mut().item_spacing.x = 0.0;
                 ui.label("powered by ");
