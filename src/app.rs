@@ -155,6 +155,11 @@ impl epi::App for SmartcalcApp {
 
         egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
             ui.horizontal(|ui| {
+                if plugins.ongoing_request() {
+                    ui.add(egui::Spinner::new());
+                    ui.label("Loading... ");
+                    tracing::warn!(">>>loaded");
+                }
                 egui::warn_if_debug_build(ui);
                 ui.spacing_mut().item_spacing.x = 0.0;
                 ui.label("powered by ");

@@ -56,7 +56,7 @@ impl Plugin {
     }
 
     pub fn disable(&self, smartcalc: &mut SmartCalc) {
-        //smartcalc.delete_rule("en".to_string(), self.name());
+        smartcalc.delete_rule("en".to_string(), self.name());
     }
 }
 
@@ -86,9 +86,9 @@ impl RequestManager {
 
 #[derive(Default)]
 pub struct PluginManager {
-    plugins: Vec<Rc<dyn PluginTrait>>,
-    plugins2: Vec<Plugin>,
-    requests: Rc<RequestManager>
+    plugins: Vec<Plugin>,
+    requests: Rc<RequestManager>,
+    ongoing_request: bool
 }
 
 impl PluginManager {
@@ -96,8 +96,7 @@ impl PluginManager {
         match T::init(smartcalc, ctx, self.requests.clone()) {
             Ok(plugin) => {
                 tracing::info!("Plugin added: {}", plugin.name());
-                self.plugins2.push(Plugin::new(plugin.clone()));
-                self.plugins.push(plugin);
+                self.plugins.push(Plugin::new(plugin.clone()));
             },
             Err(error) => {
                 tracing::warn!("Plugin configure error: {:?}", error);
@@ -111,20 +110,25 @@ impl PluginManager {
         self.add_plugin::<city_time::CityTimePlugin>(smartcalc, ctx);
 
 
-        for plugin in self.plugins2.iter() {
+        for plugin in self.plugins.iter() {
             plugin.enable(smartcalc);
         }
     }
+
+    pub fn ongoing_request(&self) -> bool {
+        self.ongoing_request
+    }
     
-    pub fn process(&mut self, ctx: &Context, smartcalc: &mut SmartCalc) {
+    pub fn process(&mut self, _: &Context, _: &mut SmartCalc) {
         let mut finished_requests = Vec::new();
         let mut requests = self.requests.requests.borrow_mut();
         //self.requests.requests.borrow_mut().retain(|_, request| request.get_data().is_some());
         for (index, (plugin_name, request)) in requests.iter().enumerate() {
             match request.get_data() {
                 Some(response) => {
-                    match self.plugins2.iter().find(|plugin| plugin.name() == &plugin_name[..]) {
+                    match self.plugins.iter().find(|plugin| plugin.name() == &plugin_name[..]) {
                         Some(plugin) => {
+                            tracing::warn!(">>>called");
                             finished_requests.push(index);
                             plugin.plugin.http_result(response, request.extra.clone());
                         },
@@ -138,5 +142,7 @@ impl PluginManager {
         for index in finished_requests.iter() {
             requests.remove(*index);
         }
+
+        self.ongoing_request = requests.len() > 0;
     }
 }
