@@ -11,8 +11,9 @@ use smartcalc::{RuleTrait, SmartCalc};
 use crate::http::Request;
 
 
-pub mod coin;
-pub mod weather;
+mod coin;
+mod weather;
+mod city_time;
 
 pub fn get_number(field_name: &str, fields: &BTreeMap<String, TokenType>) -> Option<f64> {
     return match fields.get(field_name) {
@@ -107,6 +108,7 @@ impl PluginManager {
     pub fn build(&mut self, smartcalc: &mut SmartCalc, ctx: &Context) {
         self.add_plugin::<coin::CoinPlugin>(smartcalc, ctx);
         self.add_plugin::<weather::WeatherPlugin>(smartcalc, ctx);
+        self.add_plugin::<city_time::CityTimePlugin>(smartcalc, ctx);
 
 
         for plugin in self.plugins2.iter() {
