@@ -2,7 +2,6 @@ use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::rc::Rc;
 
-use chrono::NaiveDateTime;
 use eframe::egui::Context;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
@@ -19,7 +18,6 @@ use super::PluginTrait;
 
 use super::PluginError;
 use super::RequestManager;
-use super::get_number;
 use super::get_text;
 
 pub type CityArray = Vec<CityItem>;
@@ -57,7 +55,7 @@ impl PluginTrait for CityTimePlugin {
     fn init(_: &mut SmartCalc, ctx: &Context, requests: Rc<RequestManager>) -> Result<Rc<Self>, PluginError> {
         let mut city_time = Self::default();
         city_time.requests = requests;
-        city_time.requests.add(&city_time.name(), Request::get("https://github.com/erhanbaris/jsons/raw/main/cities.json", ctx));
+        city_time.requests.add(&city_time.name(), Request::get("https://erhanbaris.github.io/jsons/cities.json", ctx));
         Ok(Rc::new(city_time))
     }
 }

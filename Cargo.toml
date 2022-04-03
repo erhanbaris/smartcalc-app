@@ -9,7 +9,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 smartcalc = { path = "../smartcalculator/smartcalc" }
-eframe = "0.17.0"
+eframe = { version = "0.17.0", features = ["persistence", "default_fonts"] }
 ehttp = "0.2"
 poll-promise = "0.1.0"
 tracing = "0.1.32"
@@ -21,6 +21,7 @@ serde_derive = "1.0.123"
 num-format = { version = "0.4", features = ["with-system-locale"] }
 chrono-tz = { version = "0.6.1", default-features = false }
 localzone = "0.2.0"
+lazy_static = "1.4.0"
 
 [dependencies.chrono]
 version = "0.4"

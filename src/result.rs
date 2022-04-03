@@ -76,7 +76,12 @@ impl ResultPanel {
         
                     for (index, output) in calculation.outputs.iter().enumerate() {
                         ui.with_layout(layout, |ui| {
-                            let label = Label::new(RichText::new(output).color(egui::Color32::from_rgb(205, 255, 0)).font(FontId::new(32., FontFamily::Name("Quicksand".into()))));
+                            let label = match output {
+                                Ok(output) => output,
+                                Err(_) => "⚠"
+                            };
+
+                            let label = Label::new(RichText::new(label).color(egui::Color32::from_rgb(205, 255, 0)).font(FontId::new(32., FontFamily::Name("Quicksand".into()))));
                             self.draw_label(ui, label, state, index);
                         });
                     }

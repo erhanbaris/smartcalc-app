@@ -8,6 +8,7 @@ pub struct Request {
 }
 
 impl Request {
+   #[allow(dead_code)]
     pub fn get_with_extra(url: &str, ctx: &egui::Context, extra: String) -> Self {
         Request::inner_get(url, ctx, Some(extra))
     }
@@ -16,14 +17,12 @@ impl Request {
         Request::inner_get(url, ctx, None)
     }
 
-    fn inner_get(url: &str, ctx: &egui::Context, extra: Option<String>) -> Self {
-        let ctx = ctx.clone();
+    fn inner_get(url: &str, _: &egui::Context, extra: Option<String>) -> Self {
         let (sender, promise) = Promise::new();
         let request = ehttp::Request::get(url);
         
         ehttp::fetch(request, move |response: ehttp::Result<ehttp::Response>| {
-            tracing::warn!("loaded");
-            ctx.request_repaint();
+            //ctx.request_repaint();
             let response = match response {
                 Ok(response) => match response.text() {
                     Some(response) => response.to_string(),

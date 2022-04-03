@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::fmt::Debug;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -62,6 +62,7 @@ impl Plugin {
 
 #[derive(Debug)]
 pub enum PluginError {
+   #[allow(dead_code)]
     Error(String)
 }
 
@@ -86,17 +87,20 @@ impl RequestManager {
 
 #[derive(Default)]
 pub struct PluginManager {
-    plugins: Vec<Plugin>,
+    pub plugins: Vec<Plugin>,
     requests: Rc<RequestManager>,
     ongoing_request: bool
 }
 
 impl PluginManager {
-    fn add_plugin<T: 'static + PluginTrait>(&mut self, smartcalc: &mut SmartCalc, ctx: &Context) {
+    fn add_plugin<T: 'static + PluginTrait>(&mut self, smartcalc: &mut SmartCalc, enabled_plugins: &mut HashMap<String, bool>, ctx: &Context) {
         match T::init(smartcalc, ctx, self.requests.clone()) {
-            Ok(plugin) => {
+            Ok(plugin) => {                
                 tracing::info!("Plugin added: {}", plugin.name());
                 self.plugins.push(Plugin::new(plugin.clone()));
+                if !enabled_plugins.contains_key(&plugin.name()) {
+                    enabled_plugins.insert(plugin.name(), true);
+                }
             },
             Err(error) => {
                 tracing::warn!("Plugin configure error: {:?}", error);
@@ -104,10 +108,10 @@ impl PluginManager {
         };
     }
     
-    pub fn build(&mut self, smartcalc: &mut SmartCalc, ctx: &Context) {
-        self.add_plugin::<coin::CoinPlugin>(smartcalc, ctx);
-        self.add_plugin::<weather::WeatherPlugin>(smartcalc, ctx);
-        self.add_plugin::<city_time::CityTimePlugin>(smartcalc, ctx);
+    pub fn build(&mut self, smartcalc: &mut SmartCalc, enabled_plugins: &mut HashMap<String, bool>, ctx: &Context) {
+        self.add_plugin::<coin::CoinPlugin>(smartcalc, enabled_plugins, ctx);
+        self.add_plugin::<weather::WeatherPlugin>(smartcalc, enabled_plugins, ctx);
+        self.add_plugin::<city_time::CityTimePlugin>(smartcalc, enabled_plugins, ctx);
 
 
         for plugin in self.plugins.iter() {
@@ -128,7 +132,6 @@ impl PluginManager {
                 Some(response) => {
                     match self.plugins.iter().find(|plugin| plugin.name() == &plugin_name[..]) {
                         Some(plugin) => {
-                            tracing::warn!(">>>called");
                             finished_requests.push(index);
                             plugin.plugin.http_result(response, request.extra.clone());
                         },

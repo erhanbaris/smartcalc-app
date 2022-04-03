@@ -7,12 +7,10 @@ use smartcalc::SmartCalcConfig;
 use smartcalc::TokenType;
 use smartcalc::RuleTrait;
 
-use crate::http::Request;
 use super::PluginTrait;
 
 use super::PluginError;
 use super::RequestManager;
-use super::get_text;
 
 #[derive(Default)]
 pub struct WeatherPlugin {
@@ -38,14 +36,8 @@ impl RuleTrait for WeatherPlugin {
         "Weather".to_string()
     }
 
-    fn call(&self, smartcalc: &SmartCalcConfig, fields: &BTreeMap<String, TokenType>) -> Option<TokenType> {
-        if fields.contains_key("coin") {
-            let coin_name = get_text("coin", fields).unwrap().to_lowercase();
-            //self.requests.add(&self.name(), Request::get("https://api.coincap.io/v2/assets", &self.context));
-            return None;
-        } else {
-            return None;
-        }
+    fn call(&self, _: &SmartCalcConfig, _: &BTreeMap<String, TokenType>) -> Option<TokenType> {
+        None
      }
 }
 // {DATETIME_DATE_TIME:data} {GROUP:conversion:conversion_group} {TEXT:type:unix}

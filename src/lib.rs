@@ -8,6 +8,7 @@ mod scroll;
 mod config;
 mod toggle_switch;
 mod query;
+mod settings;
 
 #[cfg(target_arch = "wasm32")]
 use eframe::wasm_bindgen::{self, prelude::*};

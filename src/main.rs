@@ -9,6 +9,7 @@ mod scroll;
 mod config;
 mod toggle_switch;
 mod query;
+mod settings;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn main() {

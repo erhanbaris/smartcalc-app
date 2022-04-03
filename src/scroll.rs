@@ -8,8 +8,8 @@
 use eframe::egui::*;
 
 #[derive(Clone, Copy, Debug)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[cfg_attr(feature = "serde", serde(default))]
+#[derive(serde::Deserialize, serde::Serialize)]
+#[serde(default)]
 pub struct State {
     /// Positive offset means scrolling down/right
     pub offset: Vec2,

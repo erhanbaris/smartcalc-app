@@ -12,11 +12,12 @@ pub struct CodePanel {
 }
 
 impl CodePanel {
-    fn calculate_and_format(&mut self, code: &str, outputs: &mut Vec<String>, smartcalc: &SmartCalc) -> egui::text::LayoutJob {
+    fn calculate_and_format(&mut self, code: &str, outputs: &mut Vec<Result<String, String>>, smartcalc: &SmartCalc, update_smartcalc_config: &mut bool) -> egui::text::LayoutJob {
         let Self { highlighter, .. } = self;
         let mut ui_tokens = Vec::new();
 
-        if highlighter.is_dirty(code) {
+        if highlighter.is_dirty(code) || *update_smartcalc_config {
+            *update_smartcalc_config = false;
 
             let results = smartcalc.execute("en", code);
             outputs.clear();
@@ -27,11 +28,11 @@ impl CodePanel {
                         ui_tokens.push(result.ui_tokens.to_vec());
                         match &result.result {
                             Ok(line) => { 
-                                outputs.push(line.output.to_string());},
-                            Err(_) => { outputs.push("".to_string()); }
+                                outputs.push(Ok(line.output.to_string()));},
+                            Err(error) => { outputs.push(Err(error.to_string())); }
                         }
                     },
-                    None => { outputs.push("".to_string()); }
+                    None => { outputs.push(Ok("".to_string())); }
                 }
             }
         }
@@ -41,6 +42,7 @@ impl CodePanel {
 
     pub fn ui(&mut self, ui: &mut egui::Ui, calculation: &mut Calculation, state: &mut State) {
         let Calculation {code, outputs, smartcalc} = calculation;
+        let State {scroll, cursor, update_smartcalc_config, ..} = state;
 
         let frame = egui::containers::Frame {
             margin: egui::style::Margin { left: 10., right: 5., top: 5., bottom: 5. },
@@ -53,7 +55,7 @@ impl CodePanel {
         egui::CentralPanel::default().frame(frame).show_inside(ui, |ui| {
             ui.heading(RichText::new("Calculation").color(Color32::WHITE));
             let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
-                let mut layout_job = self.calculate_and_format(string, outputs, smartcalc);
+                let mut layout_job = self.calculate_and_format(string, outputs, smartcalc, update_smartcalc_config);
                 layout_job.wrap_width = wrap_width;
                 ui.fonts().layout_job(layout_job)
             };
@@ -61,7 +63,7 @@ impl CodePanel {
             let output = ScrollArea::vertical()
                 .id_source("source")
                 .show(ui, |ui| {
-                    state.cursor = egui::TextEdit::multiline(code)
+                    *cursor = egui::TextEdit::multiline(code)
                         .frame(false)
                         .desired_width(f32::INFINITY)
                         .font(FontId::new(35.0, FontFamily::Name("Quicksand".into())))
@@ -69,8 +71,8 @@ impl CodePanel {
                         .show(ui).cursor_range;
             });
             
-            if output.state.offset != state.scroll {
-                state.scroll = output.state.offset;
+            if &output.state.offset != scroll {
+                *scroll = output.state.offset;
             }
         });
     }

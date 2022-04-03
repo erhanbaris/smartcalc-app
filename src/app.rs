@@ -1,14 +1,11 @@
 use std::{collections::BTreeMap};
 
-use eframe::{egui::{self, FontDefinitions, FontData, Button, Widget, RichText, Visuals, text_edit::CursorRange, CollapsingHeader}, epi, epaint::{Color32, FontFamily, Vec2}};
+use eframe::{egui::{self, FontDefinitions, FontData, Button, Widget, RichText, Visuals, text_edit::CursorRange}, epi, epaint::{Color32, FontFamily, Vec2}};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::from_str;
 use smartcalc::SmartCalc;
-use chrono::TimeZone;
-use chrono::Local;
-use chrono_tz::{Tz, OffsetName};
 
-use crate::{result::ResultPanel, http::Request, calculation::Calculation, toggle_switch::toggle, query::PluginManager};
+use crate::{result::ResultPanel, http::Request, calculation::{Calculation, Settings}, query::PluginManager, settings::SettingsWindow};
 use crate::code::CodePanel;
 
 
@@ -22,36 +19,43 @@ pub struct Currency {
 pub struct State {
     pub scroll: Vec2,
     pub cursor: Option<CursorRange>,
-    pub show_settings: bool
+    pub show_settings: bool,
+    pub update_smartcalc_config: bool
 }
 
+#[derive(serde::Deserialize, serde::Serialize)]
+#[serde(default)]
 pub struct SmartcalcApp {
     calculation: Calculation,
+
+    #[serde(skip)]
     code_panel: CodePanel,
+
+    #[serde(skip)]
     result_panel: ResultPanel,
+
+    #[serde(skip)]
+    settings_window: SettingsWindow,
+
+    #[serde(skip)]
     fetch_currencies: Option<Request>,
+
+    #[serde(skip)]
     state: State,
-    plugins: PluginManager
+
+    #[serde(skip)]
+    plugins: PluginManager,
+
+    settings: Settings
 }
 
 impl Default for SmartcalcApp {
     fn default() -> Self {
-        let timezone = match localzone::get_local_zone() {
-            Some(tz) => match tz.parse::<Tz>() {
-                Ok(tz) => {
-                    let date_time = Local::today().naive_local();
-                    tz.offset_from_utc_date(&date_time).abbreviation().to_string()
-                },
-                Err(_) => "UTC".to_string()
-            },
-            None => "UTC".to_string()
-        };
-    
         let mut smartcalc = SmartCalc::default();
         
         smartcalc.set_decimal_seperator(",".to_string());
         smartcalc.set_thousand_separator(".".to_string());
-        smartcalc.set_timezone(timezone).unwrap();
+        smartcalc.set_timezone("UTC".to_string()).unwrap();
 
         Self {
             result_panel: ResultPanel::default(),
@@ -59,7 +63,9 @@ impl Default for SmartcalcApp {
             fetch_currencies: None,
             calculation: Calculation::new(),
             state: State::default(),
-            plugins: PluginManager::default()
+            plugins: PluginManager::default(),
+            settings: Settings::default(),
+            settings_window: SettingsWindow::default()
         }
     }
 }
@@ -69,43 +75,37 @@ impl epi::App for SmartcalcApp {
         "SmartCalc App"
     }
 
-    fn setup(&mut self, ctx: &egui::Context, _frame: &epi::Frame, _storage: Option<&dyn epi::Storage>) {
-        let Self { result_panel, code_panel, calculation, fetch_currencies, state, plugins} = self;
-
-        #[cfg(feature = "persistence")]
-        if let Some(storage) = _storage {
+    fn setup(&mut self, ctx: &egui::Context, _frame: &epi::Frame, storage: Option<&dyn epi::Storage>) {
+        if let Some(storage) = storage {
             *self = epi::get_value(storage, epi::APP_KEY).unwrap_or_default()
         }
+
+        let Self { calculation, fetch_currencies, plugins, settings, ..} = self;
 
         let mut font = FontDefinitions::default();
         font.font_data.insert("Quicksand".to_owned(),FontData::from_static(include_bytes!("../fonts/Quicksand-Regular.ttf")));
         font.families.insert(FontFamily::Name("Quicksand".into()), vec!["Quicksand".to_owned(), "Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned(), "emoji-icon-font".to_owned()]);
         ctx.set_fonts(font);
         ctx.set_visuals(Visuals::dark());
+        calculation.set(settings);
 
         *fetch_currencies = Some(Request::get("https://www.floatrates.com/daily/usd.json", ctx));
-        plugins.build(&mut calculation.smartcalc, ctx);
+        plugins.build(&mut calculation.smartcalc, &mut settings.enabled_plugins, ctx);
     }
 
-    #[cfg(feature = "persistence")]
     fn save(&mut self, storage: &mut dyn epi::Storage) {
+        tracing::warn!("saved");
         epi::set_value(storage, epi::APP_KEY, self);
     }
     
-    fn update(&mut self, ctx: &egui::Context, _frame: &epi::Frame) {
-        let Self { result_panel, code_panel, calculation, fetch_currencies, state, plugins} = self;
+    fn update(&mut self, ctx: &egui::Context, _: &epi::Frame) {
+        let Self { result_panel, code_panel, calculation, fetch_currencies, state, plugins, settings, settings_window} = self;
         plugins.process(ctx, &mut calculation.smartcalc);
+        settings_window.ui(ctx, state, settings, plugins, calculation);
 
-        egui::Window::new("⚙ Settings").collapsible(false).open(&mut state.show_settings).resizable(false).show(ctx, |ui| {
-            let mut my_bool = true;
-
-            CollapsingHeader::new("Widgets")
-                .default_open(true)
-                .show(ui, |ui| {
-                    ui.label("Hello World!");
-                    ui.add(toggle(&mut my_bool));
-            });
-        });
+        if state.update_smartcalc_config {
+            calculation.set(settings);
+        }
         
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
@@ -155,15 +155,29 @@ impl epi::App for SmartcalcApp {
 
         egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
             ui.horizontal(|ui| {
-                if plugins.ongoing_request() {
-                    ui.add(egui::Spinner::new());
-                    ui.label("Loading... ");
-                    tracing::warn!(">>>loaded");
-                }
-                egui::warn_if_debug_build(ui);
-                ui.spacing_mut().item_spacing.x = 0.0;
-                ui.label("powered by ");
-                ui.hyperlink_to("SmartCalc Engine", "https://github.com/erhanbaris/smartcalc");
+                ui.horizontal(|ui| {
+                    ui.spacing_mut().item_spacing.x = 0.0;
+                    ui.label("Version: ");
+                    ui.label(RichText::new(env!("CARGO_PKG_VERSION")).color(Color32::WHITE));
+                    ui.add_space(6.0);
+                    ui.separator();
+                    ui.add_space(6.0);
+                    ui.label("Status: ");
+                    if plugins.ongoing_request() {
+                        ui.label(RichText::new("Loading").strong().color(Color32::LIGHT_GREEN));
+                    } else {
+                        ui.label(RichText::new("Ready").color(Color32::WHITE));
+                    }
+                    ui.add_space(6.0);
+                    ui.separator();
+                });
+
+                ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                    ui.spacing_mut().item_spacing.x = 0.0;
+                    ui.hyperlink_to("SmartCalc Engine", "https://github.com/erhanbaris/smartcalc");
+                    ui.add_space(6.0);
+                    ui.label("powered by ");
+                });
             });
         });
 
