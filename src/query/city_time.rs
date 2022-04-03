@@ -2,17 +2,19 @@ use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::rc::Rc;
 
+use chrono::Utc;
 use eframe::egui::Context;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use serde_json::from_str;
-use smartcalc::NumberType;
+use smartcalc::TimeOffset;
 use smartcalc::SmartCalc;
 use smartcalc::SmartCalcConfig;
 use smartcalc::TokenType;
 use smartcalc::RuleTrait;
 
 
+use crate::config::TIMEZONE_LIST;
 use crate::http::Request;
 use super::PluginTrait;
 
@@ -62,7 +64,7 @@ impl PluginTrait for CityTimePlugin {
 
 impl RuleTrait for CityTimePlugin {
     fn name(&self) -> String {
-        "CityTime".to_string()
+        "City Time".to_string()
     }
 
     fn call(&self, _: &SmartCalcConfig, fields: &BTreeMap<String, TokenType>) -> Option<TokenType> {
@@ -70,8 +72,13 @@ impl RuleTrait for CityTimePlugin {
             let city_name = get_text("city", fields).unwrap().to_lowercase();
             return match self.cities.borrow().iter().find(|item| item.names.contains(&city_name)) {
                 Some(city) => {
-                    tracing::warn!("City found : {:?}", city);
-                    Some(TokenType::Number(1024.0, NumberType::Decimal))
+                    match TIMEZONE_LIST.iter().find(|timezone| timezone.name == city.timezone) {
+                        Some(timezone) => Some(TokenType::Time(Utc::now().naive_utc(), TimeOffset {
+                            name: city.timezone.to_string(),
+                            offset: (timezone.offset * 60.0) as i32
+                        })),
+                        None => None
+                    }
                 },
                 None => None
             };

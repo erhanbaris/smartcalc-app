@@ -5,7 +5,7 @@ use serde_derive::{Deserialize, Serialize};
 use serde_json::from_str;
 use smartcalc::SmartCalc;
 
-use crate::{result::ResultPanel, http::Request, calculation::{Calculation, Settings}, query::PluginManager, settings::SettingsWindow};
+use crate::{result::ResultPanel, http::Request, calculation::Calculation, query::PluginManager, settings::{SettingsWindow, Settings}};
 use crate::code::CodePanel;
 
 

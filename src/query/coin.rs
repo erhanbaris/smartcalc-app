@@ -78,7 +78,7 @@ impl PluginTrait for CoinPlugin {
 
 impl RuleTrait for CoinPlugin {
     fn name(&self) -> String {
-        "Coin".to_string()
+        "Crypto Coin".to_string()
     }
 
     fn call(&self, smartcalc: &SmartCalcConfig, fields: &BTreeMap<String, TokenType>) -> Option<TokenType> {

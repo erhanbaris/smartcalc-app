@@ -12,7 +12,6 @@ use crate::http::Request;
 
 
 mod coin;
-mod weather;
 mod city_time;
 
 pub fn get_number(field_name: &str, fields: &BTreeMap<String, TokenType>) -> Option<f64> {
@@ -110,7 +109,6 @@ impl PluginManager {
     
     pub fn build(&mut self, smartcalc: &mut SmartCalc, enabled_plugins: &mut HashMap<String, bool>, ctx: &Context) {
         self.add_plugin::<coin::CoinPlugin>(smartcalc, enabled_plugins, ctx);
-        self.add_plugin::<weather::WeatherPlugin>(smartcalc, enabled_plugins, ctx);
         self.add_plugin::<city_time::CityTimePlugin>(smartcalc, enabled_plugins, ctx);
 
 
