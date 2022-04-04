@@ -59,6 +59,6 @@ python -m SimpleHTTPServer
 Then open http://127.0.0.1:8000/ at your favorite browser.
 
 https://github.com/dmfilipenko/timezones.json/blob/master/timezones.json
-var clean = a.map(group => group.utc.map(timezone => { var b = { offset: group.offset, name: timezone, isdst: group.isdst,  }; return b; }));
+var clean = a.map(group => group.utc.map(timezone => { var b = { offset: group.offset, name: timezone, isdst: group.isdst, abbr: group.abbr }; return b; }));
 var zones = clean.flat().sort((a,b) => a.name.localeCompare(b.name));
 JSON.stringify(zones);

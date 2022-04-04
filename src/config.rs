@@ -16,7 +16,22 @@ impl ToString for Timezone {
     }
 }
 
+impl Timezone {
+    pub fn abbr(&self) -> String {
+        format!("GMT{}:{}", self.offset.trunc(), self.offset.fract() * 60.0)
+    }
+}
+
 lazy_static! {
+    pub static ref UTC_TIMEZONE: Timezone = {
+        let m = Timezone {
+            offset: 0.0,
+            name: "UTC".to_string(),
+            isdst: false
+        };
+        m
+    };
+
     pub static ref TIMEZONE_LIST: Vec<Timezone> = {
         let m = vec![Timezone {
             offset: 0.0,
@@ -1905,4 +1920,18 @@ lazy_static! {
         }];
         m
     };
+}
+
+#[cfg(test)]
+#[test]
+fn timezone_list_test() {
+    use crate::{calculation::Calculation, settings::Settings};
+
+    let mut calculation = Calculation::default();
+    let mut settings = Settings::default();
+    for timezone in TIMEZONE_LIST.iter() {
+        settings.timezone = timezone.clone();
+        calculation.configure(&settings);
+        assert_eq!(calculation.smartcalc.get_time_offset().offset/60, timezone.offset as i32);
+    }
 }

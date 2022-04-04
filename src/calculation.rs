@@ -25,14 +25,13 @@ data * 2
         }
     }
 
-    pub fn set(&mut self, settings: &Settings) {
+    pub fn configure(&mut self, settings: &Settings) {
         self.smartcalc.set_date_rule("en", settings.date_format.datas.to_vec());
         self.smartcalc.set_decimal_seperator(settings.decimal_seperator.to_string());
         self.smartcalc.set_thousand_separator(settings.thousand_separator.to_string());
 
-        let timezone = format!("UTC{}:{}", settings.timezone.offset.trunc(), settings.timezone.offset.fract() * 60.0);
-        if let Err(error) = self.smartcalc.set_timezone(timezone) {
-            tracing::warn!("Timezone not valid. Error: {}", error);
+        if let Err(error) = self.smartcalc.set_timezone(settings.timezone.abbr()) {
+            tracing::warn!("Timezone not valid ({}). Error: {}", settings.timezone.abbr(), error);
             self.smartcalc.set_timezone("UTC".to_string()).unwrap();
         }
     }

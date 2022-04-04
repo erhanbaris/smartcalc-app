@@ -14,10 +14,22 @@ mod settings;
 #[cfg(not(target_arch = "wasm32"))]
 pub fn main() {
     use crate::app::SmartcalcApp;
+    
+    let icon = image::open("./assets/smartcalc.png").expect("Failed to open icon path").to_rgba8();
+    let (icon_width, icon_height) = icon.dimensions();
+    
+    let options = eframe::NativeOptions {
+        icon_data: Some(eframe::epi::IconData {
+            rgba: icon.into_raw(),
+            width: icon_width,
+            height: icon_height,
+        }),
+        ..Default::default()
+    };
+
     tracing_subscriber::fmt::init();
     let app = SmartcalcApp::default();
-    let native_options = eframe::NativeOptions::default();
 
     tracing::debug!("Started");
-    eframe::run_native(Box::new(app), native_options);
+    eframe::run_native(Box::new(app), options);
 }

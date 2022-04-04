@@ -65,15 +65,6 @@ pub struct ScrollAreaOutput<R> {
     pub inner_rect: Rect,
 }
 
-/// Add vertical and/or horizontal scrolling to a contained [`Ui`].
-///
-/// ```
-/// # egui::__run_test_ui(|ui| {
-/// egui::ScrollArea::vertical().show(ui, |ui| {
-///     // Add a lot of widgets here.
-/// });
-/// # });
-/// ```
 #[derive(Clone, Debug)]
 #[must_use = "You should call .show()"]
 pub struct ScrollArea {

@@ -1,13 +1,12 @@
-use std::{collections::BTreeMap};
+use std::collections::BTreeMap;
 
 use eframe::{egui::{self, FontDefinitions, FontData, Button, Widget, RichText, Visuals, text_edit::CursorRange}, epi, epaint::{Color32, FontFamily, Vec2}};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::from_str;
-use smartcalc::SmartCalc;
 
-use crate::{result::ResultPanel, http::Request, calculation::Calculation, query::PluginManager, settings::{SettingsWindow, Settings}};
+use crate::{result::ResultPanel, http::Request, calculation::Calculation, query::PluginManager, settings::{SettingsWindow, Settings}, config::TIMEZONE_LIST};
 use crate::code::CodePanel;
-
+use crate::config::UTC_TIMEZONE;
 
 #[derive(Default, Debug, Clone, PartialEq)]
 #[derive(Deserialize, Serialize)]
@@ -51,21 +50,36 @@ pub struct SmartcalcApp {
 
 impl Default for SmartcalcApp {
     fn default() -> Self {
-        let mut smartcalc = SmartCalc::default();
-        
-        smartcalc.set_decimal_seperator(",".to_string());
-        smartcalc.set_thousand_separator(".".to_string());
-        smartcalc.set_timezone("UTC".to_string()).unwrap();
+        use chrono_tz::Tz;
+        let timezone = match localzone::get_local_zone() {
+            Some(tz) => match tz.parse::<Tz>() {
+                Ok(tz) => {
+                    let search_timezone = tz.to_string();
+                    match TIMEZONE_LIST.iter().find(|timezone| timezone.name == search_timezone) {
+                        Some(timezone) => timezone.clone(),
+                        None => UTC_TIMEZONE.clone()
+                    }
+                },
+                Err(_) => UTC_TIMEZONE.clone()
+            },
+            None => UTC_TIMEZONE.clone()
+        };
+
+        let mut settings = Settings::default();
+        settings.timezone = timezone;
+
+        let mut calculation = Calculation::new();
+        calculation.configure(&settings);
 
         Self {
             result_panel: ResultPanel::default(),
             code_panel: CodePanel::default(),
             fetch_currencies: None,
-            calculation: Calculation::new(),
             state: State::default(),
             plugins: PluginManager::default(),
-            settings: Settings::default(),
-            settings_window: SettingsWindow::default()
+            settings_window: SettingsWindow::default(),
+            settings,
+            calculation
         }
     }
 }
@@ -87,7 +101,7 @@ impl epi::App for SmartcalcApp {
         font.families.insert(FontFamily::Name("Quicksand".into()), vec!["Quicksand".to_owned(), "Ubuntu-Light".to_owned(), "NotoEmoji-Regular".to_owned(), "emoji-icon-font".to_owned()]);
         ctx.set_fonts(font);
         ctx.set_visuals(Visuals::dark());
-        calculation.set(settings);
+        calculation.configure(settings);
 
         *fetch_currencies = Some(Request::get("https://www.floatrates.com/daily/usd.json", ctx));
         plugins.build(&mut calculation.smartcalc, &mut settings.enabled_plugins, ctx);
@@ -104,7 +118,7 @@ impl epi::App for SmartcalcApp {
         settings_window.ui(ctx, state, settings, plugins, calculation);
 
         if state.update_smartcalc_config {
-            calculation.set(settings);
+            calculation.configure(settings);
         }
         
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
@@ -159,6 +173,10 @@ impl epi::App for SmartcalcApp {
                     ui.spacing_mut().item_spacing.x = 0.0;
                     ui.label("Version: ");
                     ui.label(RichText::new(env!("CARGO_PKG_VERSION")).color(Color32::WHITE));
+                    ui.add_space(6.0);
+                    ui.separator();
+                    ui.label("Timezone: ");
+                    ui.label(RichText::new(&settings.timezone.name).color(Color32::WHITE));
                     ui.add_space(6.0);
                     ui.separator();
                     ui.add_space(6.0);
