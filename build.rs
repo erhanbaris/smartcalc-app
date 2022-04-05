@@ -1,8 +1,7 @@
 use std::io;
-#[cfg(windows)] use winres::WindowsResource;
-
 fn main() -> io::Result<()> {
-    #[cfg(windows)] {
+    #[cfg(all(windows_subsystem = "windows", not(target_arch = "wasm32")))] {
+        use winres::WindowsResource;
         WindowsResource::new()
             .set_icon("./assets/smartcalc.ico")
             .compile()?;

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use eframe::egui::Ui;
+use eframe::egui::{Ui, RichText};
 use eframe::egui::{self, CollapsingHeader};
 use lazy_static::*;
 
@@ -154,6 +154,9 @@ impl SettingsWindow {
             .default_open(false)
             .show(ui, |ui| {
                 ui.columns(2, |columns| {
+                    columns[0].label("Decimal digits");
+                    columns[1].label(RichText::new("value comes from currency type").italics());
+                    
                     columns[0].label("Remove fract if zero");
                     if columns[1].add(toggle(&mut config.remove_fract_if_zero)).changed() {
                         tracing::warn!("Money remove_fract_if_zero changed");

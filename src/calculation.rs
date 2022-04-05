@@ -29,6 +29,10 @@ data * 2
         self.smartcalc.set_date_rule("en", settings.date_format.datas.to_vec());
         self.smartcalc.set_decimal_seperator(settings.decimal_seperator.to_string());
         self.smartcalc.set_thousand_separator(settings.thousand_separator.to_string());
+        
+        self.smartcalc.set_money_configuration(settings.money_format.remove_fract_if_zero, settings.money_format.use_fract_rounding);
+        self.smartcalc.set_number_configuration(settings.number_format.decimal_digits, settings.number_format.remove_fract_if_zero, settings.number_format.use_fract_rounding);
+        self.smartcalc.set_percentage_configuration(settings.percent_format.decimal_digits, settings.percent_format.remove_fract_if_zero, settings.percent_format.use_fract_rounding);
 
         if let Err(error) = self.smartcalc.set_timezone(settings.timezone.abbr()) {
             tracing::warn!("Timezone not valid ({}). Error: {}", settings.timezone.abbr(), error);
