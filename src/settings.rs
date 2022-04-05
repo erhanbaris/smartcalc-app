@@ -13,7 +13,7 @@ use chrono::TimeZone;
 use chrono::Local;
 use chrono_tz::{Tz, OffsetName};
 
-use crate::config::TIMEZONE_LIST;
+use crate::config::{TIMEZONE_LIST, CURRENT_TIMEZONE};
 use crate::config::Timezone;
 
 lazy_static! {
@@ -200,6 +200,8 @@ impl SettingsWindow {
                     .show_ui(&mut columns[1], |ui| {
                         for timezone in crate::config::TIMEZONE_LIST.iter() {
                             if ui.selectable_value(&mut settings.timezone, timezone.clone(), timezone.to_string()).changed() {
+                                CURRENT_TIMEZONE.take();
+                                println!("{:?}", CURRENT_TIMEZONE.set(settings.timezone.clone()));
                                 tracing::warn!("timezone changed");
                                 *update_smartcalc_config = true;
                             }

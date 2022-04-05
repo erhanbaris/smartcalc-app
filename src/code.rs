@@ -12,13 +12,11 @@ pub struct CodePanel {
 }
 
 impl CodePanel {
-    fn calculate_and_format(&mut self, code: &str, outputs: &mut Vec<Result<String, String>>, smartcalc: &SmartCalc, update_smartcalc_config: &mut bool) -> egui::text::LayoutJob {
+    fn calculate_and_format(&mut self, code: &str, outputs: &mut Vec<Result<String, String>>, smartcalc: &SmartCalc, recalculate: &mut bool) -> egui::text::LayoutJob {
         let Self { highlighter, .. } = self;
         let mut ui_tokens = Vec::new();
 
-        if highlighter.is_dirty(code) || *update_smartcalc_config {
-            *update_smartcalc_config = false;
-
+        if highlighter.is_dirty(code) || *recalculate {
             let results = smartcalc.execute("en", code);
             outputs.clear();
 
@@ -37,12 +35,14 @@ impl CodePanel {
             }
         }
         
-        highlighter.highlight(code, &ui_tokens)
+        let output = highlighter.highlight(code, &ui_tokens, *recalculate);
+        *recalculate = false;
+        output
     }
 
     pub fn ui(&mut self, ui: &mut egui::Ui, calculation: &mut Calculation, state: &mut State) {
         let Calculation {code, outputs, smartcalc} = calculation;
-        let State {scroll, cursor, update_smartcalc_config, ..} = state;
+        let State {scroll, cursor, recalculate, ..} = state;
 
         let frame = egui::containers::Frame {
             margin: egui::style::Margin { left: 10., right: 5., top: 5., bottom: 5. },
@@ -55,7 +55,7 @@ impl CodePanel {
         egui::CentralPanel::default().frame(frame).show_inside(ui, |ui| {
             ui.heading(RichText::new("Calculation").color(Color32::WHITE));
             let mut layouter = |ui: &egui::Ui, string: &str, wrap_width: f32| {
-                let mut layout_job = self.calculate_and_format(string, outputs, smartcalc, update_smartcalc_config);
+                let mut layout_job = self.calculate_and_format(string, outputs, smartcalc, recalculate);
                 layout_job.wrap_width = wrap_width;
                 ui.fonts().layout_job(layout_job)
             };

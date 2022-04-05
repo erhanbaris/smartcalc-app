@@ -19,7 +19,8 @@ pub struct State {
     pub scroll: Vec2,
     pub cursor: Option<CursorRange>,
     pub show_settings: bool,
-    pub update_smartcalc_config: bool
+    pub update_smartcalc_config: bool,
+    pub recalculate: bool
 }
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -114,11 +115,13 @@ impl epi::App for SmartcalcApp {
     
     fn update(&mut self, ctx: &egui::Context, _: &epi::Frame) {
         let Self { result_panel, code_panel, calculation, fetch_currencies, state, plugins, settings, settings_window} = self;
-        plugins.process(ctx, &mut calculation.smartcalc);
+        plugins.process(ctx, state);
         settings_window.ui(ctx, state, settings, plugins, calculation);
 
         if state.update_smartcalc_config {
             calculation.configure(settings);
+            state.recalculate = true;
+            state.update_smartcalc_config = false;
         }
         
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {

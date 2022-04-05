@@ -86,8 +86,8 @@ impl MemoizedHighlighter {
         }
     }
 
-    pub fn highlight(&mut self, code: &str, ui_tokens: &[Vec<UiToken>]) -> egui::text::LayoutJob {
-        if self.is_dirty(code) {
+    pub fn highlight(&mut self, code: &str, ui_tokens: &[Vec<UiToken>], recalculate: bool) -> egui::text::LayoutJob {
+        if self.is_dirty(code) || recalculate {
             self.code = code.to_owned();
             self.output = self.colorize_tokens(code, ui_tokens);
         }

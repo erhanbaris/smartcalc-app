@@ -8,6 +8,7 @@ use eframe::egui::Context;
 use smartcalc::{TokenType, SmartCalcAstType};
 use smartcalc::{RuleTrait, SmartCalc};
 
+use crate::app::State;
 use crate::http::Request;
 
 
@@ -121,7 +122,7 @@ impl PluginManager {
         self.ongoing_request
     }
     
-    pub fn process(&mut self, _: &Context, _: &mut SmartCalc) {
+    pub fn process(&mut self, _: &Context, state: &mut State) {
         let mut finished_requests = Vec::new();
         let mut requests = self.requests.requests.borrow_mut();
         //self.requests.requests.borrow_mut().retain(|_, request| request.get_data().is_some());
@@ -130,6 +131,7 @@ impl PluginManager {
                 Some(response) => {
                     match self.plugins.iter().find(|plugin| plugin.name() == &plugin_name[..]) {
                         Some(plugin) => {
+                            state.recalculate = true;
                             finished_requests.push(index);
                             plugin.plugin.http_result(response, request.extra.clone());
                         },

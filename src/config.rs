@@ -1,3 +1,5 @@
+use std::cell::{UnsafeCell, RefCell};
+
 use lazy_static::*;
 
 #[derive(Default, PartialEq)]
@@ -21,6 +23,10 @@ impl Timezone {
         format!("GMT{}:{}", self.offset.trunc(), self.offset.fract() * 60.0)
     }
 }
+
+
+use once_cell::sync::OnceCell;
+pub static CURRENT_TIMEZONE: OnceCell<Timezone> = OnceCell::new();
 
 lazy_static! {
     pub static ref UTC_TIMEZONE: Timezone = {

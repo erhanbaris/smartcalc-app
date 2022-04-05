@@ -14,6 +14,7 @@ use smartcalc::TokenType;
 use smartcalc::RuleTrait;
 
 
+use crate::config::CURRENT_TIMEZONE;
 use crate::config::TIMEZONE_LIST;
 use crate::http::Request;
 use super::PluginTrait;
@@ -72,9 +73,10 @@ impl RuleTrait for CityTimePlugin {
             let city_name = get_text("city", fields).unwrap().to_lowercase();
             return match self.cities.borrow().iter().find(|item| item.names.contains(&city_name)) {
                 Some(city) => {
+                    println!("{:?}", CURRENT_TIMEZONE.get());
                     match TIMEZONE_LIST.iter().find(|timezone| timezone.name == city.timezone) {
                         Some(timezone) => Some(TokenType::Time(Utc::now().naive_utc(), TimeOffset {
-                            name: city.timezone.to_string(),
+                            name: CURRENT_TIMEZONE.get()?.name.to_string(),
                             offset: (timezone.offset * 60.0) as i32
                         })),
                         None => None
