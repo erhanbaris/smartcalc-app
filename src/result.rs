@@ -1,3 +1,9 @@
+/*
+ * smartcalc-app v1.0.8
+ * Copyright (c) Erhan BARIS (Ruslan Ognyanov Asenov)
+ * Licensed under the GNU General Public License v2.0.
+ */
+
 use eframe::egui::{self, Layout, Label, WidgetInfo, WidgetType};
 use eframe::epaint::{Vec2, Rounding, Stroke, TextShape};
 use eframe::{epaint::{Color32, FontId, FontFamily}, egui::RichText};

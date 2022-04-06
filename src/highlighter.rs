@@ -1,3 +1,9 @@
+/*
+ * smartcalc-app v1.0.8
+ * Copyright (c) Erhan BARIS (Ruslan Ognyanov Asenov)
+ * Licensed under the GNU General Public License v2.0.
+ */
+
 use eframe::egui;
 use eframe::epaint::{FontId, FontFamily};
 use smartcalc::{UiToken, UiTokenType};

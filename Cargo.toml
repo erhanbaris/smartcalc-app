@@ -1,6 +1,6 @@
 [package]
 name = "smartcalc-app"
-version = "1.0.7"
+version = "1.0.8"
 authors = ["Erhan BARIS <erhanbaris@gmail.com>"]
 edition = "2021"
 build = "build.rs"
@@ -9,7 +9,7 @@ build = "build.rs"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-smartcalc = { path = "../smartcalculator/smartcalc" }
+smartcalc = "1.0.8"
 eframe = { version = "0.17.0", features = ["persistence", "default_fonts"] }
 ehttp = "0.2"
 poll-promise = "0.1.0"
