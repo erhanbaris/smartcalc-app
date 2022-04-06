@@ -4,7 +4,7 @@ use eframe::{egui::{self, FontDefinitions, FontData, Button, Widget, RichText, V
 use serde_derive::{Deserialize, Serialize};
 use serde_json::from_str;
 
-use crate::{result::ResultPanel, http::Request, calculation::Calculation, query::PluginManager, settings::{SettingsWindow, Settings}, config::TIMEZONE_LIST};
+use crate::{result::ResultPanel, http::Request, calculation::Calculation, query::PluginManager, settings::{SettingsWindow, Settings}, config::{TIMEZONE_LIST, update_current_timezone}};
 use crate::code::CodePanel;
 use crate::config::UTC_TIMEZONE;
 
@@ -92,7 +92,8 @@ impl epi::App for SmartcalcApp {
 
     fn setup(&mut self, ctx: &egui::Context, _frame: &epi::Frame, storage: Option<&dyn epi::Storage>) {
         if let Some(storage) = storage {
-            *self = epi::get_value(storage, epi::APP_KEY).unwrap_or_default()
+            *self = epi::get_value(storage, epi::APP_KEY).unwrap_or_default();
+            update_current_timezone(&self.settings.timezone);
         }
 
         let Self { calculation, fetch_currencies, plugins, settings, ..} = self;

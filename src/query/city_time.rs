@@ -13,9 +13,8 @@ use smartcalc::SmartCalcConfig;
 use smartcalc::TokenType;
 use smartcalc::RuleTrait;
 
-
-use crate::config::CURRENT_TIMEZONE;
 use crate::config::TIMEZONE_LIST;
+use crate::config::get_current_timezone;
 use crate::http::Request;
 use super::PluginTrait;
 
@@ -51,7 +50,11 @@ impl PluginTrait for CityTimePlugin {
         };
     }
     fn get_rules(&self) -> Vec<String> {
-        vec!["time {GROUP:conversion:conversion_group} {TEXT:city}".to_string(), "{TEXT:city} {GROUP:conversion:conversion_group} time".to_string()]
+        vec![
+            "time {TEXT:type:at} {TEXT:city}".to_string(),
+            "{TEXT:city} {TEXT:type:at} time".to_string(),
+            "time {GROUP:conversion:conversion_group} {TEXT:city}".to_string(),
+            "{TEXT:city} {GROUP:conversion:conversion_group} time".to_string()        ]
     }
     fn upcast(self: Rc<Self>) -> Rc<dyn RuleTrait> { self }
 
@@ -73,10 +76,9 @@ impl RuleTrait for CityTimePlugin {
             let city_name = get_text("city", fields).unwrap().to_lowercase();
             return match self.cities.borrow().iter().find(|item| item.names.contains(&city_name)) {
                 Some(city) => {
-                    println!("{:?}", CURRENT_TIMEZONE.get());
                     match TIMEZONE_LIST.iter().find(|timezone| timezone.name == city.timezone) {
                         Some(timezone) => Some(TokenType::Time(Utc::now().naive_utc(), TimeOffset {
-                            name: CURRENT_TIMEZONE.get()?.name.to_string(),
+                            name: get_current_timezone().name,
                             offset: (timezone.offset * 60.0) as i32
                         })),
                         None => None

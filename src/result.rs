@@ -66,7 +66,7 @@ impl ResultPanel {
             layout = layout.with_cross_align(egui::Align::Min);
 
             ui.with_layout(layout, |ui| { ui.heading(RichText::new("Result").color(Color32::WHITE)) });
-
+            ui.spacing_mut().item_spacing.y = 0.0;
             ScrollArea::vertical()
                 .id_source("target")
                 .vertical_scroll_offset(state.scroll[1])
@@ -76,12 +76,13 @@ impl ResultPanel {
         
                     for (index, output) in calculation.outputs.iter().enumerate() {
                         ui.with_layout(layout, |ui| {
+                            ui.spacing_mut().item_spacing.y = 0.0;
                             let label = match output {
                                 Ok(output) => output,
                                 Err(_) => "⚠"
                             };
 
-                            let label = Label::new(RichText::new(label).color(egui::Color32::from_rgb(205, 255, 0)).font(FontId::new(32., FontFamily::Name("Quicksand".into()))));
+                            let label = Label::new(RichText::new(label).color(egui::Color32::from_rgb(205, 255, 0)).font(FontId::new(30., FontFamily::Name("Quicksand".into()))));
                             self.draw_label(ui, label, state, index);
                         });
                     }

@@ -66,7 +66,7 @@ impl CodePanel {
                     *cursor = egui::TextEdit::multiline(code)
                         .frame(false)
                         .desired_width(f32::INFINITY)
-                        .font(FontId::new(35.0, FontFamily::Name("Quicksand".into())))
+                        .font(FontId::new(30.0, FontFamily::Name("Quicksand".into())))
                         .layouter(&mut layouter)
                         .show(ui).cursor_range;
             });

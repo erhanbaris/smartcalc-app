@@ -71,7 +71,7 @@ impl MemoizedHighlighter {
             None => (Color32::from_rgb(139, 148, 158), Color32::TRANSPARENT, Stroke::none())
         };
 
-        let font_id = FontId::new(35.0, FontFamily::Name("Quicksand".into()));
+        let font_id = FontId::new(30.0, FontFamily::Name("Quicksand".into()));
         let strikethrough = Stroke::none();
         let valign = Align::TOP;
 

@@ -1,4 +1,4 @@
-use std::cell::{UnsafeCell, RefCell};
+use std::cell::RefCell;
 
 use lazy_static::*;
 
@@ -20,13 +20,37 @@ impl ToString for Timezone {
 
 impl Timezone {
     pub fn abbr(&self) -> String {
-        format!("GMT{}:{}", self.offset.trunc(), self.offset.fract() * 60.0)
+        let trunch_part = self.offset.trunc() as i32;
+        let fract_part = (self.offset.fract() * 60.0) as i32;
+
+        let trunch_part = if trunch_part == 0 { String::new() }
+            else if trunch_part > 0 { format!("+{}", trunch_part) }
+            else { format!("{}", trunch_part) };
+
+        let fract_part = if fract_part == 0 { String::new() }
+            else { format!(":{:02}", fract_part) };
+
+        format!("GMT{}{}", trunch_part, fract_part)
     }
 }
 
+thread_local!(pub static CURRENT_TIMEZONE: RefCell<Timezone> = RefCell::new(Timezone {
+    offset: 0.0,
+    name: "UTC".to_string(),
+    isdst: false
+}));
 
-use once_cell::sync::OnceCell;
-pub static CURRENT_TIMEZONE: OnceCell<Timezone> = OnceCell::new();
+pub fn update_current_timezone(timezone: &Timezone) {
+    CURRENT_TIMEZONE.with(|current_timezone| {
+        *current_timezone.borrow_mut() = timezone.clone();
+    });
+}
+
+pub fn get_current_timezone() -> Timezone {
+    CURRENT_TIMEZONE.with(|current_timezone| {
+        current_timezone.borrow().clone()
+    })
+}
 
 lazy_static! {
     pub static ref UTC_TIMEZONE: Timezone = {

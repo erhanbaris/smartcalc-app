@@ -13,31 +13,39 @@ use chrono::TimeZone;
 use chrono::Local;
 use chrono_tz::{Tz, OffsetName};
 
-use crate::config::{TIMEZONE_LIST, CURRENT_TIMEZONE};
+use crate::config::{TIMEZONE_LIST, update_current_timezone};
 use crate::config::Timezone;
 
 lazy_static! {
     pub static ref DATE_PARSE_TYPES: Vec<DateFormat> = {
         let m = vec![DateFormat {
-            name: "dd/mm/yyyy".to_string(),
-            datas: vec!["{NUMBER:day}/{NUMBER:month}/{NUMBER:year}".to_string(),
+            name: "day month year".to_string(),
+            datas: vec![
+                "{NUMBER:day}.{NUMBER:month}.{NUMBER:year}".to_string(),
+                "{NUMBER:day} {MONTH:month} {NUMBER:year}".to_string(),
+                "{NUMBER:day}/{NUMBER:month}/{NUMBER:year}".to_string(),
                 "{MONTH:month} {NUMBER:day}".to_string(),
-                "{NUMBER:day} {MONTH:month}".to_string()]
+                "{NUMBER:day} {MONTH:month}".to_string()
+            ]
         }, DateFormat {
-            name: "mm/dd/yyyy".to_string(),
-            datas: vec!["{NUMBER:month}/{NUMBER:day}/{NUMBER:year}".to_string(),
+            name: "month day year".to_string(),
+            datas: vec![
+                "{NUMBER:month}.{NUMBER:day}.{NUMBER:year}".to_string(),
+                "{MONTH:month} {NUMBER:day}, {NUMBER:year}".to_string(),
+                "{MONTH:month} {NUMBER:day} {NUMBER:year}".to_string(),
+                "{NUMBER:month}/{NUMBER:day}/{NUMBER:year}".to_string(),
                 "{MONTH:month} {NUMBER:day}".to_string(),
-                "{NUMBER:day} {MONTH:month}".to_string()]
+                "{NUMBER:day} {MONTH:month}".to_string()
+            ]
         }, DateFormat {
-            name: "dd.mm.yyyy".to_string(),
-            datas: vec!["{NUMBER:day}.{NUMBER:month}.{NUMBER:year}".to_string(),
+            name: "year month day".to_string(),
+            datas: vec![
+                "{NUMBER:year}.{NUMBER:month}.{NUMBER:day}".to_string(),
+                "{NUMBER:year} {MONTH:month} {NUMBER:day}".to_string(),
+                "{NUMBER:year}/{NUMBER:month}/{NUMBER:day}".to_string(),
                 "{MONTH:month} {NUMBER:day}".to_string(),
-                "{NUMBER:day} {MONTH:month}".to_string()]
-        }, DateFormat {
-            name: "mm.dd.yyyy".to_string(),
-            datas: vec!["{NUMBER:month}.{NUMBER:day}.{NUMBER:year}".to_string(),
-                "{MONTH:month} {NUMBER:day}".to_string(),
-                "{NUMBER:day} {MONTH:month}".to_string()]
+                "{NUMBER:day} {MONTH:month}".to_string()
+            ]
         }];
         m
     };
@@ -200,8 +208,7 @@ impl SettingsWindow {
                     .show_ui(&mut columns[1], |ui| {
                         for timezone in crate::config::TIMEZONE_LIST.iter() {
                             if ui.selectable_value(&mut settings.timezone, timezone.clone(), timezone.to_string()).changed() {
-                                CURRENT_TIMEZONE.take();
-                                println!("{:?}", CURRENT_TIMEZONE.set(settings.timezone.clone()));
+                                update_current_timezone(&settings.timezone);
                                 tracing::warn!("timezone changed");
                                 *update_smartcalc_config = true;
                             }
